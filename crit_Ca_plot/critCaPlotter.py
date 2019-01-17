@@ -83,16 +83,6 @@ def main():
 
         scaled_crit_Ca = [math.sqrt(alpha[i]) * crit_Ca[i] for i in range(num_data)]
 
-        # xVals = np.linspace(0,1,50)
-        # popt, pcov = curve_fit(expFunc, alpha, crit_Ca)
-        # popt, pcov = curve_fit(asympFunc, alpha, crit_Ca)
-
-        # plotting norm vs time
-        # plt.xscale("log", nonposx='clip')
-        # plt.yscale("log", nonposy='clip')
-
-        # plt.errorbar(alpha, crit_Ca, yerr=error, fmt=markerList[markCnt % len(markerList)], label="Simulations")
-
         plotline, caplines, barlinecols = plt.errorbar(alpha, crit_Ca, yerr=error, fmt="None", elinewidth=2, label=vol_rat)
         for x in caplines[::2]:
             x.set_marker('^')
@@ -101,9 +91,6 @@ def main():
         for bar in barlinecols:
             bar.set_linestyle(line_style_list[style_cnt % len(line_style_list)])
         style_cnt += 1
-
-        # disabled
-        # plt.plot(xVals, asympFunc(xVals, *popt), ls='-', label="Power Fit")
 
     # plt.title('' % vol_rat)
     plt.xlabel("alpha", fontsize=15)
@@ -122,12 +109,6 @@ def main():
     plt.legend(title="reduced volume", fontsize=10)
 
     props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
-    # textstr = '\n'.join((
-    #    r'Non-Linear Fit: $Ax^B$',
-    #    r'$A = {0:7.2f}$'.format(popt[0]),
-    #    r'$B = {0:7.2f}$'.format(popt[1])))
-    # ax.text(0.10, 0.10, textstr, transform=ax.transAxes, fontsize=14,
-    #    verticalalignment='bottom', bbox=props)
     plt.tight_layout()
 
     plt.savefig(plot_name + ".pdf", format="pdf", dpi=1000)
