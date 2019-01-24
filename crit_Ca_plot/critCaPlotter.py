@@ -30,12 +30,25 @@ def main():
     style_cnt = 0
 
     folder = sys.argv[1]
-    plot_name = input("Name for the plots: ")
+
+    unscaled_fig = plt.figure(figsize=(4.5, 4.5))
+    unscaled_ax = unscaled_fig.add_subplot(111)
+    scaled_fig = plt.figure(figsize=(4.5, 4.5))
+    scaled_ax = scaled_fig.add_subplot(111)
 
     for filename in sorted(glob.glob("{}/*.csv".format(folder))):
-        data_tuple = get_data(filename)
-        plot_crit_Ca(data_tuple, plot_name, style_cnt)       
+        unscaled_data, scaled_data = get_data(filename)
+        plot_crit_Ca(unscaled_ax, unscaled_data, style_cnt)
+        plot_crit_Ca(scaled_ax, scaled_data, style_cnt)
         style_cnt += 1
+
+    unscaled_fig.tight_layout()
+    unscaled_fig.savefig(unscaled_data.file_name + ".pdf", format="pdf", dpi=1000)
+    plt.close(unscaled_fig)
+
+    scaled_fig.tight_layout()
+    scaled_fig.savefig(scaled_data.file_name + ".pdf", format="pdf", dpi=1000)
+    plt.close(scaled_fig)
 
 def get_data(filename):
     """
@@ -90,25 +103,32 @@ def get_data(filename):
         error.append(abs(upper[i] - lower[i]) / 2.)
 
     scaled_crit_Ca = [math.sqrt(alpha[i]) * crit_Ca[i] for i in range(num_data)]
-    plot_data = collections.namedtuple("plot_data", [visc_rat, vol_rat, alpha, crit_Ca, scaled_crit_Ca])
-    return plot_data
+    scaled_error = [math.sqrt(alpha[i]) * error[i] for i in range(num_data)]
 
-def plot_crit_Ca(plot_data, plot_name, style_num):
-    plt.figure(figsize=(4.5, 4.5))
+    Data_Tuple = collections.namedtuple("Data_Tuple", ["file_name", "y_label", "vol_rat", "visc_rat", "alpha", "Ca_data", "error"])
 
-    plotline, caplines, barlinecols = plt.errorbar(plot_data.alpha, plot_data.crit_Ca, yerr=plot_dataerror, fmt="None", elinewidth=2, label=vol_rat)
+    unscaled_data = Data_Tuple("unscaled_critical_Ca_plot", "critical Ca", vol_rat, visc_rat, alpha, crit_Ca, error)
+    scaled_data = Data_Tuple("scaled_critical_Ca_plot", "scaled critical Ca", vol_rat, visc_rat, alpha, scaled_crit_Ca, scaled_error)
+    return (unscaled_data, scaled_data)
+
+def plot_crit_Ca(ax, plot_data, style_num):
+    """
+    Input the scaled or unscaled namedtuple and the the number for the line style
+    """
+
+    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt="", elinewidth=2, capsize=2, label=plot_data.vol_rat)
+    print(caplines)
     for x in caplines[::2]:
         x.set_marker('^')
     for y in caplines[1::2]:
         y.set_marker('v')
-    for bar in barlinecols:
-        bar.set_linestyle(LINE_STYLE_LIST[style_num % len(LINE_STYLE_LIST)])
+    #for bar in barlinecols:
+    #    bar.set_linestyle(LINE_STYLE_LIST[style_num % len(LINE_STYLE_LIST)])
 
-    plt.xlabel("alpha", fontsize=15)
-    plt.ylabel("critical Ca", fontsize=15)
-    plt.xlim((0, 1.05))
+    ax.set_xlabel("alpha", fontsize=15)
+    ax.set_ylabel(plot_data.y_label, fontsize=15)
+    ax.set_xlim((0, 1.05))
     # plt.ylim( (10**0,12**1) )
-    ax = plt.gca()
     ax.yaxis.set_major_locator(ticker.AutoLocator())
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
@@ -116,14 +136,9 @@ def plot_crit_Ca(plot_data, plot_name, style_num):
     ax.xaxis.set_major_locator(ticker.AutoLocator())
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
-    plt.grid(True)
-    plt.legend(title="reduced volume", fontsize=10)
+    ax.grid(True)
+    ax.legend(title="reduced volume", fontsize=10)
 
-    props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
-    plt.tight_layout()
-
-    plt.savefig(plot_name + ".pdf", format="pdf", dpi=1000)
-    plt.close()
 
 def expFunc(x, a, b):
     return a * np.exp(-b * x)
