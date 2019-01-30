@@ -116,8 +116,7 @@ def plot_crit_Ca(ax, plot_data, style_num):
     Input the scaled or unscaled namedtuple and the the number for the line style
     """
 
-    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt="", elinewidth=2, capsize=2, label=plot_data.vol_rat)
-    print(caplines)
+    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt="", elinewidth=2, capsize=2, label=plot_data.visc_rat)
     for x in caplines[::2]:
         x.set_marker('^')
     for y in caplines[1::2]:
@@ -137,7 +136,7 @@ def plot_crit_Ca(ax, plot_data, style_num):
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
     ax.grid(True)
-    ax.legend(title="reduced volume", fontsize=10)
+    ax.legend(title="viscosity ratio", fontsize=10)
 
 
 def expFunc(x, a, b):
