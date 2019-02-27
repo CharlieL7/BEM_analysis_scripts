@@ -1,9 +1,13 @@
 #!usr/bin/env python3
-
+"""
+Rotates a bunch of meshes in a folder so x-axis is major axis of the vesicle
+Note that the vectors other than position, such as velocity or the forces, have not been rotated
+"""
 import sys
 import glob
 import numpy as np
-import tec_dat_alt as tda
+sys.path.insert(0, "../tec_dat/")
+import tec_dat as td
 
 def main():
     if len(sys.argv) != 3:
@@ -12,15 +16,16 @@ def main():
     out_dir = sys.argv[2]
     file_num = 0
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
-        all_data, f2v, params = tda.read_dat(dat_file)
+        all_data, f2v, params = td.read_dat(dat_file)
         positions = []
         for vert_data in all_data:
             f_data = [float(x) for x in vert_data[0:3]]
             positions.append(f_data)
-        positions = tda.rotate_mesh(np.array(positions))
-        for i, vert in enumerate(positions): # replacing old data with rotated
+        positions = td.rotate_mesh(np.array(positions))
+        for i, vert in enumerate(positions): 
+            # replacing old data with rotated
             all_data[i][0:3] = vert
-        tda.write_dat(all_data, f2v, params, "{0}{1:02d}_rot.dat".format(out_dir, file_num))
+        td.write_dat(all_data, f2v, params, "{0}{1:02d}_rot.dat".format(out_dir, file_num))
         file_num += 1
 
 if __name__ == "__main__":

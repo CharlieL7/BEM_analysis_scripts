@@ -1,0 +1,3 @@
+[submodule "tec_dat"]
+	path = tec_dat
+	url = https://github.rcac.purdue.edu/lin891/tec_dat.git
