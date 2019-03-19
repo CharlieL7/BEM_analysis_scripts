@@ -18,13 +18,19 @@ def main():
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
         all_data, f2v, params = td.read_dat(dat_file)
         positions = []
+        vels = []
         for vert_data in all_data:
             f_data = [float(x) for x in vert_data[0:3]]
+            v_data = [float(x) for x in vert_data[3:6]]
             positions.append(f_data)
+            vels.append(v_data)
+        vels = td.rotate_vectors(np.array(positions), np.array(vels))
         positions = td.rotate_mesh(np.array(positions))
+        
         for i, vert in enumerate(positions): 
             # replacing old data with rotated
             all_data[i][0:3] = vert
+            all_data[i][3:6] = vels[i]
         td.write_dat(all_data, f2v, params, "{0}{1:02d}_rot.dat".format(out_dir, file_num))
         file_num += 1
 
