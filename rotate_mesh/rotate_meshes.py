@@ -26,8 +26,8 @@ def main():
             vels.append(v_data)
         vels = td.rotate_vectors(np.array(positions), np.array(vels))
         positions = td.rotate_mesh(np.array(positions))
-        
-        for i, vert in enumerate(positions): 
+
+        for i, vert in enumerate(positions):
             # replacing old data with rotated
             all_data[i][0:3] = vert
             all_data[i][3:6] = vels[i]
