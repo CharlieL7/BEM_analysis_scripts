@@ -116,18 +116,23 @@ def plot_crit_Ca(ax, plot_data, style_num):
     Input the scaled or unscaled namedtuple and the the number for the line style
     """
 
-    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt="", elinewidth=2, capsize=2, label=plot_data.visc_rat)
+    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt=" ", elinewidth=2, capsize=2, label=plot_data.visc_rat)
     for x in caplines[::2]:
         x.set_marker('^')
     for y in caplines[1::2]:
         y.set_marker('v')
-    #for bar in barlinecols:
-    #    bar.set_linestyle(LINE_STYLE_LIST[style_num % len(LINE_STYLE_LIST)])
+    for bar in barlinecols:
+        bar.set_linestyle(LINE_STYLE_LIST[style_num % len(LINE_STYLE_LIST)])
 
-    ax.set_xlabel("alpha", fontsize=15)
-    ax.set_ylabel(plot_data.y_label, fontsize=15)
+    # textbox
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    textstr = r"$\nu=0.65$"
+    ax.text(0.42, 0.10, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+
+    ax.set_xlabel(r"$\alpha$ (flow type)", fontsize=15)
+    ax.set_ylabel(r"$Ca_{crit}$", fontsize=15)
     ax.set_xlim((0, 1.05))
-    # plt.ylim( (10**0,12**1) )
+    ax.set_ylim((0, 7))
     ax.yaxis.set_major_locator(ticker.AutoLocator())
     ax.yaxis.set_minor_locator(ticker.AutoMinorLocator())
     ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
@@ -136,7 +141,7 @@ def plot_crit_Ca(ax, plot_data, style_num):
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
     ax.grid(True)
-    ax.legend(title="viscosity ratio", fontsize=10)
+    ax.legend(title=r"$\lambda$", fontsize=10)
 
 
 def expFunc(x, a, b):

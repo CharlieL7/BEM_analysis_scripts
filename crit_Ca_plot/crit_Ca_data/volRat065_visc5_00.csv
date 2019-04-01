@@ -1,7 +1,9 @@
 #scaled = False
 #volRat = 0.650
 #viscRat = 5.00
+#all need extending
 alpha,lower,upper
 0.250,4.500,5.500
+0.500,3.000,4.000
 0.750,2.598,3.175
 1.000,2.250,2.750
