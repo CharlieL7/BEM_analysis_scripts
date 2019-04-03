@@ -18,10 +18,10 @@ def main():
     if len(sys.argv) != 3:
         sys.exit("Usage: in_dir (where dat files to rotate), out_dir")
     in_dir = sys.argv[1]
-    positions = []
-    angles = []
-    times = []
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
+        positions = []
+        angles = []
+        times = []
         all_data, _f2v, params = td.read_dat(dat_file)
         times.append(params["time"])
         for vert_data in all_data:
@@ -41,7 +41,7 @@ def calc_angle(positions):
 
     # need to find the major axis of the vesicle (longest length)
     # project to each eigenvector and find one with the largest difference in magnitude
-    max_span = None
+    max_span = 0
     major_axis_ind = None
     for i, eig_vec in enumerate(eig_vecs):
         min_val = MAX_FLT
@@ -58,6 +58,9 @@ def calc_angle(positions):
             major_axis_ind = i
 
     major_axis = eig_vecs[major_axis_ind]
-    planar_angle = math.atan2(major_axis[1]/major_axis[0])
-    kayak_angle = math.atan2(major_axis[2]/major_axis[0])
+    planar_angle = math.atan2(major_axis[1], major_axis[0])
+    kayak_angle = math.atan2(major_axis[2], major_axis[0])
     return (planar_angle, kayak_angle)
+
+if __name__ == "__main__":
+    main();
