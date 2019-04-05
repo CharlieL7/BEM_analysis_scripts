@@ -58,8 +58,8 @@ def calc_angle(positions):
             major_axis_ind = i
 
     major_axis = eig_vecs[major_axis_ind]
-    planar_angle = math.atan2(major_axis[1], major_axis[0])
-    kayak_angle = math.atan2(major_axis[2], major_axis[0])
+    planar_angle = math.atan2(major_axis[1], major_axis[0]) * 180/math.pi
+    kayak_angle = math.atan2(major_axis[2], major_axis[0]) * 180/math.pi
     return (planar_angle, kayak_angle)
 
 if __name__ == "__main__":
