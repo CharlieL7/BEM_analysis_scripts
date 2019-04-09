@@ -10,7 +10,7 @@ def main():
     out_dir = sys.argv[2]
     pert = 0.01
     if len(sys.argv) == 4:
-        pert = sys.argv[3]
+        pert = float(sys.argv[3])
 
     file_num = 0
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
