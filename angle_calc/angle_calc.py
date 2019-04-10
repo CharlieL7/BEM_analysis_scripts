@@ -16,26 +16,24 @@ MAX_FLT = float("inf")
 
 def main():
     if len(sys.argv) != 3:
-        sys.exit("Usage: in_dir (where dat files to rotate), out_dir")
+        sys.exit("Usage: in_dir (where dat files), out_dir")
     in_dir = sys.argv[1]
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
         positions = []
-        angles = []
-        times = []
         all_data, _f2v, params = td.read_dat(dat_file)
-        times.append(params["time"])
+        time = params["time"]
         for vert_data in all_data:
             f_data = [float(x) for x in vert_data[0:3]]
             positions.append(f_data)
         positions = np.array(positions)
-        angles.append(calc_angle(positions))
-        for i in range(len(angles)):
-            print("Time: {0}, Angle: {1}".format(times[i], angles[i]))
+        angles = calc_angle(positions)
+        print("Time: {0}, Angles: {1}".format(time, angles))
 
 
 def calc_angle(positions):
     """
     expecting numpy array of mesh points
+    returns angles in degrees
     """
     (_I, _eig_vals, eig_vecs) = td.calc_moment_inertia_tensor(positions)
 
