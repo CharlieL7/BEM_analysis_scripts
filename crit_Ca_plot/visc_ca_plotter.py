@@ -42,9 +42,9 @@ def main():
         plot_crit_Ca(scaled_ax, scaled_data)
         style_cnt += 1
 
-    textstr = r"$\nu=0.65$"
-    plot_final_setup(unscaled_fig, unscaled_ax, (0, 11), r"$Ca_{crit}$", textstr)
-    plot_final_setup(scaled_fig, scaled_ax, (0, 4), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
+    textstr = r"$\nu=0.70$"
+    plot_final_setup(unscaled_fig, unscaled_ax, (0, 30), r"$Ca_{crit}$", textstr)
+    plot_final_setup(scaled_fig, scaled_ax, (0, 14), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
 
     unscaled_fig.savefig(unscaled_data.file_name + ".pdf", format="pdf", dpi=1000)
     plt.close(unscaled_fig)

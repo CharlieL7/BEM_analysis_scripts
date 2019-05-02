@@ -21,13 +21,16 @@ def main():
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
         positions = []
         all_data, _f2v, params = td.read_dat(dat_file)
-        time = params["time"]
+        ca = params["shear"]
+        alpha = params["alpha"]
+        vol_rat = params["vol_rat"]
+        visc_rat = params["visc_rat"]
         for vert_data in all_data:
             f_data = [float(x) for x in vert_data[0:3]]
             positions.append(f_data)
         positions = np.array(positions)
         angles = calc_angle(positions)
-        print("Time: {0}, Angles: {1}".format(time, angles))
+        print("vol_rat: {0}, visc_rat: {1}, Ca: {2}, alpha: {3}, Angles: {4}".format(vol_rat, visc_rat, ca, alpha, angles))
 
 
 def calc_angle(positions):
