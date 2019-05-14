@@ -16,17 +16,14 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from cycler import cycler
-import palettable.colorbrewer.qualitative
 
 LINE_STYLE_DICT = {0.010:"-", 0.500:"--", 1.000:"-.", 5.000:":"}
+COLOR_STYLE_DICT = {0.010:"slateblue", 0.500:"seagreen", 1.000:"firebrick", 5.000:"coral"}
 
 def main():
     plt.rc("font", family="sans-serif")
     plt.rc("xtick", labelsize="small")
     plt.rc("ytick", labelsize="small")
-    plt.rc('axes', prop_cycle=(cycler('color',
-        palettable.colorbrewer.qualitative.Dark2_4.mpl_colors) + cycler('linestyle', ['-', '--', ':', '-.'])))
     style_cnt = 0
 
     folder = sys.argv[1]
@@ -39,8 +36,8 @@ def main():
         plot_crit_Ca(ax, data)
         style_cnt += 1
 
-    textstr = r"$\nu=0.65$"
-    plot_final_setup(fig, ax, (0, 4), r"$Ca_{crit} \cdot (\frac{1+\alpha}{2}) \cdot cos(2 \theta)$", textstr)
+    textstr = r"$\nu=0.70$"
+    plot_final_setup(fig, ax, (0, 14), r"$Ca_{crit} \cdot (\frac{1+\alpha}{2}) \cdot cos(2 \theta)$", textstr)
 
     fig.savefig(data.file_name + ".pdf", format="pdf", dpi=1000)
     plt.close(fig)
@@ -98,7 +95,9 @@ def plot_crit_Ca(ax, plot_data):
     """
     Input the scaled or unscaled namedtuple and the the number for the line style
     """
-    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt=" ", elinewidth=2, capsize=2, alpha=0.80, label=plot_data.visc_rat)
+    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt=" ",
+            elinewidth=2, capsize=2, alpha=0.80,
+            color=COLOR_STYLE_DICT[plot_data.visc_rat], label=plot_data.visc_rat)
     for x in caplines[::2]:
         x.set_marker('^')
     for y in caplines[1::2]:

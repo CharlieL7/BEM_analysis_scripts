@@ -16,17 +16,15 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from cycler import cycler
-import palettable.colorbrewer.qualitative
 
 LINE_STYLE_DICT = {0.010:"-", 0.500:"--", 1.000:"-.", 5.000:":"}
+COLOR_STYLE_DICT = {0.010:"slateblue", 0.500:"seagreen", 1.000:"firebrick", 5.000:"coral"}
+MARKER_STYLE_DICT= {0.010:"s", 0.500:"*", 1.000:".", 5.000:"X"}
 
 def main():
     plt.rc("font", family="sans-serif")
     plt.rc("xtick", labelsize="small")
     plt.rc("ytick", labelsize="small")
-    plt.rc('axes', prop_cycle=(cycler('color',
-        palettable.colorbrewer.qualitative.Dark2_4.mpl_colors) + cycler('linestyle', ['-', '--', ':', '-.'])))
     style_cnt = 0
 
     folder = sys.argv[1]
@@ -42,9 +40,9 @@ def main():
         plot_crit_Ca(scaled_ax, scaled_data)
         style_cnt += 1
 
-    textstr = r"$\nu=0.70$"
-    plot_final_setup(unscaled_fig, unscaled_ax, (0, 30), r"$Ca_{crit}$", textstr)
-    plot_final_setup(scaled_fig, scaled_ax, (0, 14), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
+    textstr = r"$\nu=0.65$"
+    plot_final_setup(unscaled_fig, unscaled_ax, (0, 12), r"$Ca_{crit}$", textstr)
+    plot_final_setup(scaled_fig, scaled_ax, (0, 5), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
 
     unscaled_fig.savefig(unscaled_data.file_name + ".pdf", format="pdf", dpi=1000)
     plt.close(unscaled_fig)
@@ -117,13 +115,14 @@ def plot_crit_Ca(ax, plot_data):
     """
     Input the scaled or unscaled namedtuple and the the number for the line style
     """
-    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt=" ", elinewidth=2, capsize=2, alpha=0.80, label=plot_data.visc_rat)
-    for x in caplines[::2]:
-        x.set_marker('^')
-    for y in caplines[1::2]:
-        y.set_marker('v')
-    #for bar in barlinecols:
-        #bar.set_linestyle(LINE_STYLE_DICT[plot_data.visc_rat])
+    visc_rat = plot_data.visc_rat
+    (plotline, caplines, barlinecols) = ax.errorbar(plot_data.alpha, plot_data.Ca_data, yerr=plot_data.error, fmt=" ",
+            elinewidth=2, capsize=2, alpha=0.80,
+            color=COLOR_STYLE_DICT[visc_rat], label=visc_rat)
+    for x in caplines:
+        x.set_marker(MARKER_STYLE_DICT[visc_rat])
+    for bar in barlinecols:
+        bar.set_linestyle(LINE_STYLE_DICT[plot_data.visc_rat])
 
 def plot_final_setup(fig, ax, y_lim, y_label, textstr):
     # textbox
