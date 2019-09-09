@@ -17,7 +17,7 @@ def main():
     out_dir = sys.argv[2]
     file_num = 0
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
-        all_data, f2v, params = td.read_dat(dat_file)
+        all_data, f2v, _params = td.read_short_dat(dat_file)
         positions = []
         for vert_data in all_data:
             f_data = [float(x) for x in vert_data[0:3]]
@@ -27,17 +27,17 @@ def main():
         num_rows = f2v.shape[0]
         tri_col = np.full((num_rows, 1), 3)
         f2v = np.hstack((tri_col, f2v))
+        f2v = (f2v).astype(int)
 
-        write_ply(positions, f2v, params, "{0}{1:02d}.ply".format(out_dir, file_num))
+        write_ply(positions, f2v, "{0}{1:02d}.ply".format(out_dir, file_num))
         file_num += 1
 
-def write_ply(positions, f2v, params, out_name):
+def write_ply(positions, f2v, out_name):
     """
      Writes vesicle shape data into a tecplot readable .dat format.
      input:
         positions: postition data as 2D numpy array
         f2v : connectivity data as 2D numpy array
-        params : dict of all other simulation parameters
         out_name: string of the filename you want for the new file
      output :
         None
@@ -46,11 +46,11 @@ def write_ply(positions, f2v, params, out_name):
         "ply",
         "format ascii 1.0",
         "comment converted from Tecdat dat file",
-        "element vertex {}".format(params["nvert"]),
+        "element vertex {}".format(len(positions)),
         "property float x",
         "property float y",
         "property float z",
-        "element face {}".format(params["nface"]),
+        "element face {}".format(len(f2v)),
         "property list uchar int vertex_index",
         "end_header\n"
         ))
