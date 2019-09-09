@@ -23,6 +23,7 @@ def main():
         for i, vert in enumerate(positions):
             # replacing old data with rotated
             all_data[i][0:3] = vert
+        params["time"] = 0.0;
         td.write_dat(all_data, f2v, params, "{0}{1:02d}_pert.dat".format(out_dir, file_num))
         file_num += 1
 
