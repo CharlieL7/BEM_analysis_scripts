@@ -21,7 +21,7 @@ def main():
     for dat_file in sorted(glob.glob(in_dir + "*.dat")):
         positions = []
         all_data, _f2v, params = td.read_dat(dat_file)
-        ca = params["shear"]
+        ca = params["deformRate"]
         alpha = params["alpha"]
         vol_rat = params["vol_rat"]
         visc_rat = params["visc_rat"]
