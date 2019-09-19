@@ -29,9 +29,9 @@ def main():
 
     folder = sys.argv[1]
 
-    unscaled_fig = plt.figure(figsize=(4.5, 4.5))
+    unscaled_fig = plt.figure(figsize=(3.0, 3.0))
     unscaled_ax = unscaled_fig.add_subplot(111)
-    scaled_fig = plt.figure(figsize=(4.5, 4.5))
+    scaled_fig = plt.figure(figsize=(3.0, 3.0))
     scaled_ax = scaled_fig.add_subplot(111)
 
     for filename in sorted(glob.glob("{}/*.csv".format(folder))):
@@ -41,8 +41,8 @@ def main():
         style_cnt += 1
 
     textstr = r"$\nu=0.65$"
-    plot_final_setup(unscaled_fig, unscaled_ax, (0, 12), r"$Ca_{crit}$", textstr)
-    plot_final_setup(scaled_fig, scaled_ax, (0, 5), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
+    plot_final_setup(unscaled_fig, unscaled_ax, (2, 12), r"$Ca_{crit}$", textstr)
+    plot_final_setup(scaled_fig, scaled_ax, (1, 5), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
 
     unscaled_fig.savefig(unscaled_data.file_name + ".pdf", format="pdf", dpi=1000)
     plt.close(unscaled_fig)
@@ -141,7 +141,7 @@ def plot_final_setup(fig, ax, y_lim, y_label, textstr):
     ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
     ax.xaxis.set_major_formatter(ticker.ScalarFormatter(useMathText=True))
     ax.grid(True)
-    ax.legend(title=r"$\lambda$", fontsize=10, bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0, prop={"size": 10})
+    #ax.legend(title=r"$\lambda$", fontsize=10, bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0, prop={"size": 10})
     fig.tight_layout(rect=[0, 0, 0.95, 1])
 
 
