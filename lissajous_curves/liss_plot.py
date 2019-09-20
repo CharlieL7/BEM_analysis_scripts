@@ -31,7 +31,7 @@ def plot_liss(in_dir, out_filename):
         for vert_data in all_data:
             pos_data = [float(x) for x in vert_data[0:3]]
             positions.append(pos_data)
-        Ca_x = -params["deformRate"] * math.sin(2 * math.pi * params["deformRate"] * params["time"])
+        Ca_x = -params["deformRate"] * math.sin(2 * math.pi * params["De"] * params["time"])
         length = td.calc_length(np.array(positions))[0]
         Ca_x_list.append(Ca_x)
         length_list.append(length)
