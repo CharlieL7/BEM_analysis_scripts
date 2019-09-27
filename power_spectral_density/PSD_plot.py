@@ -47,7 +47,7 @@ class PSD:
             file_num += 1
         self.length_arr = np.array(self.length_list)
         self.time_arr = np.array(self.time_list)
-        self.max_index = self.time_arr.size() - 1
+        self.max_index = self.time_arr.size - 1
 
 
     def len_auto_corr(self, offset):
@@ -58,11 +58,11 @@ class PSD:
         # making offset length array
         if (offset > 0 and offset < self.max_index):
             len_off = self.length_arr[0:-offset]
-            len_off.append(np.zeros(offset)) # zero if outside
+            len_off = np.append(len_off, np.zeros(offset)) # zero if outside
         elif (offset < 0 and abs(offset) < self.max_index):
             len_off = self.length_arr[offset:]
             tmp_zeros = np.zeros(abs(offset))
-            tmp_zeros.append(len_off)
+            len_off = np.append(tmp_zeros, len_off) # zero if outside
         elif offset == 0:
             len_off = self.length_arr
         else:
@@ -78,9 +78,15 @@ class PSD:
         corr_array = []
         for i in range(0, self.max_index):
             corr_array.append(self.len_auto_corr(i))
-
-        print(np.fft.rfft(corr_array))
-
+    
+        fourier = np.fft.rfft(corr_array)
+        n = fourier.size
+        print(fourier)
+        timestep = 0.001
+        freq = np.fft.fftfreq(n, d=timestep)
+        plt.figure(2)
+        plt.scatter(freq, fourier)
+        plt.show()
 
 
 if __name__ == "__main__":
