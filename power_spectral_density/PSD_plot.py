@@ -1,9 +1,6 @@
-import csv
 import sys
 import glob
-import math
 import numpy as np
-from scipy import integrate
 import matplotlib.pyplot as plt
 import tec_dat as td
 
@@ -15,8 +12,7 @@ def main():
     in_dir = sys.argv[1]
     out_filename = sys.argv[2]
     x = PSD()
-    x.get_length_data(in_dir, out_filename)
-    x.calc_PSD()
+    x.plot_corr_PSD(in_dir, out_filename)
 
 
 class PSD:
@@ -30,8 +26,30 @@ class PSD:
         self.length_list = []
         self.time_list = []
         self.max_index = 0
+        self.total_time = 0.
+        self.timestep = 0.001
+        self.De = 0.
 
-    def get_length_data(self, in_dir, out_filename):
+
+    def plot_corr_PSD(self, in_dir, out_filename):
+        self.get_length_data(in_dir)
+        (corr_array, freq, fourier) = self.calc_PSD(out_filename)
+
+        fig_corr = plt.figure()
+        ax_corr = fig_corr.add_subplot(111)
+        ax_corr.plot(corr_array)
+        ax_corr.set_xlim(left=0)
+        fig_corr.savefig("{}_corr.pdf".format(out_filename), format="pdf")
+
+        fig_PSD = plt.figure()
+        ax_PSD = fig_PSD.add_subplot(111)
+        ax_PSD.plot(freq, np.real(fourier), ".")
+        ax_PSD.set_yscale("log")
+        ax_PSD.set_xlim(left=0)
+        fig_PSD.savefig("{}_PSD.pdf".format(out_filename), format="pdf")
+
+
+    def get_length_data(self, in_dir):
         # get lengths and times
         file_num = 0
         for dat_file in sorted(glob.glob(in_dir + "*.dat")):
@@ -44,50 +62,31 @@ class PSD:
             major = td.calc_length(points)[0]
             self.length_list.append(major)
             self.time_list.append(params["time"])
+            if file_num == 0:
+                self.De = params["De"]
             file_num += 1
         self.length_arr = np.array(self.length_list)
         self.time_arr = np.array(self.time_list)
         self.max_index = self.time_arr.size - 1
+        self.total_time = self.time_arr[self.max_index] - self.time_arr[0]
+        self.length_arr = self.length_arr - np.mean(self.length_arr) # subtracting the mean
 
 
-    def len_auto_corr(self, offset):
+    def inter_len(self, ts):
         """
-        offset : integer with timestep offset
-        convention that times outside of the dataset are set to 0
+        linearly interpolate the length data so that it is constant timestep
+        needed to do the cross-correlation
+        ts : the timestep that we want to interpolate to
         """
-        # making offset length array
-        if (offset > 0 and offset < self.max_index):
-            len_off = self.length_arr[0:-offset]
-            len_off = np.append(len_off, np.zeros(offset)) # zero if outside
-        elif (offset < 0 and abs(offset) < self.max_index):
-            len_off = self.length_arr[offset:]
-            tmp_zeros = np.zeros(abs(offset))
-            len_off = np.append(tmp_zeros, len_off) # zero if outside
-        elif offset == 0:
-            len_off = self.length_arr
-        else:
-            return 0. # offset outside
-
-        max_time = self.time_arr[-1]
-        tmp_arr = np.multiply(self.length_arr, len_off)
-        tmp_ret = integrate.simps(tmp_arr, self.time_arr)
-        return tmp_ret * (1. / max_time)
+        #TODO
 
 
-    def calc_PSD(self):
-        corr_array = []
-        for i in range(0, self.max_index):
-            corr_array.append(self.len_auto_corr(i))
-    
-        fourier = np.fft.rfft(corr_array)
-        n = fourier.size
-        print(fourier)
-        timestep = 0.001
-        freq = np.fft.fftfreq(n, d=timestep)
-        plt.figure(2)
-        plt.scatter(freq, fourier)
-        plt.show()
-
+    def calc_PSD(self, out_filename):
+        corr_array = np.correlate(self.length_arr, self.length_arr, mode="full")
+        fourier = np.fft.fft(corr_array)
+        n = corr_array.size
+        freq = np.fft.fftfreq(n, d=self.timestep) * (1/self.De)
+        return (corr_array, freq, fourier)
 
 if __name__ == "__main__":
     main()
