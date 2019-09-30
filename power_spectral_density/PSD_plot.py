@@ -40,6 +40,7 @@ class PSD:
         ax_corr.plot(corr_array)
         ax_corr.set_xlim(left=0)
         fig_corr.savefig("{}_corr.pdf".format(out_filename), format="pdf")
+        fig_corr.close();
 
         fig_PSD = plt.figure()
         ax_PSD = fig_PSD.add_subplot(111)
@@ -47,12 +48,13 @@ class PSD:
         ax_PSD.set_yscale("log")
         ax_PSD.set_xlim(left=0)
         fig_PSD.savefig("{}_PSD.pdf".format(out_filename), format="pdf")
+        fig_PSD.close();
 
 
     def get_length_data(self, in_dir):
         # get lengths and times
         file_num = 0
-        for dat_file in sorted(glob.glob(in_dir + "*.dat")):
+        for dat_file in sorted(glob.glob(in_dir + "/*.dat")):
             all_data, _f2v, params = td.read_dat(dat_file)
             points = []
             for vert_data in all_data:
