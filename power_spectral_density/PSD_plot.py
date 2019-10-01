@@ -2,6 +2,7 @@ import sys
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 import tec_dat as td
 
 '''
@@ -23,21 +24,22 @@ class PSD:
     def __init__(self):
         self.length_arr = np.array([])
         self.time_arr = np.array([])
-        self.length_list = []
-        self.time_list = []
-        self.max_index = 0
-        self.total_time = 0.
         self.timestep = 0.001
         self.De = 0.
+        self.Ca = 0.
 
 
     def plot_corr_PSD(self, in_dir, out_filename):
-        self.get_length_data(in_dir)
-        (corr_array, freq, fourier) = self.calc_PSD(out_filename)
-
+        """
+        plots the calculated cross correlation and power spectral density
+        """
+        self.read_length_data(in_dir)
+        (corr_arr, freq, fourier) = self.calc_PSD()
+        
+        lag_arr = np.arange(corr_arr.size - 1, corr_arr.size, 1)
         fig_corr = plt.figure()
         ax_corr = fig_corr.add_subplot(111)
-        ax_corr.plot(corr_array)
+        ax_corr.plot(lag_arr, corr_arr)
         ax_corr.set_xlim(left=0)
         fig_corr.savefig("{}_corr.pdf".format(out_filename), format="pdf")
         fig_corr.close();
@@ -51,9 +53,16 @@ class PSD:
         fig_PSD.close();
 
 
-    def get_length_data(self, in_dir):
-        # get lengths and times
+    def read_length_data(self, in_dir):
+        """
+        reads lengths and times from a directory of dat files
+        sets length_arr, time_arr, De, Ca
+        in_dir : directory string
+        returns : nothing
+        """
         file_num = 0
+        length_list = []
+        time_list = []
         for dat_file in sorted(glob.glob(in_dir + "/*.dat")):
             all_data, _f2v, params = td.read_dat(dat_file)
             points = []
@@ -62,33 +71,52 @@ class PSD:
                 points.append(pos_data)
             points = np.array(points)
             major = td.calc_length(points)[0]
-            self.length_list.append(major)
-            self.time_list.append(params["time"])
+            length_list.append(major)
+            time_list.append(params["time"])
             if file_num == 0:
                 self.De = params["De"]
+                self.Ca = params["Ca"]
             file_num += 1
         self.length_arr = np.array(self.length_list)
         self.time_arr = np.array(self.time_list)
-        self.max_index = self.time_arr.size - 1
-        self.total_time = self.time_arr[self.max_index] - self.time_arr[0]
         self.length_arr = self.length_arr - np.mean(self.length_arr) # subtracting the mean
 
 
-    def inter_len(self, ts):
+    def calc_PSD(self):
         """
-        linearly interpolate the length data so that it is constant timestep
-        needed to do the cross-correlation
-        ts : the timestep that we want to interpolate to
+        calculates the power spectral density data
+        returns : tuple of (n1array cross correlation values, n1array fourier frequencies, n1array fourier amplitudes)
         """
-        #TODO
+        # first interpolate the data
+        len_fun = interp1d(self.length_arr, self.time_arr, kind="linear")
+        inter_times = calc_inter_range(self.time_arr[0], self.time_arr[-1], self.timestep)
+        len_inter_arr = [ len_fun(x) for x in inter_times ]
+        
+        # cross correlate the interpolated data
+        corr_arr = np.correlate(len_inter_arr, len_inter_arr, mode="full")
+        fourier = np.fft.fft(corr_arr)
+        n = corr_arr.size
+        # getting frequencies multiplied by cycle peroid (non-dimensionalized by bending timescale)
+        freq = np.fft.fftfreq(n, d=self.timestep) / (self.De * self.Ca)
+        return (corr_arr, freq, fourier)
 
 
-    def calc_PSD(self, out_filename):
-        corr_array = np.correlate(self.length_arr, self.length_arr, mode="full")
-        fourier = np.fft.fft(corr_array)
-        n = corr_array.size
-        freq = np.fft.fftfreq(n, d=self.timestep) * (1/self.De)
-        return (corr_array, freq, fourier)
+def calc_inter_range(start, end, timestep):
+    """
+    outputs an evenly spaced numpy array from start to greatest n fulfilling:
+    start + n * timestep < end
+    start: starting time
+    end: ending time
+    timestep: interval for range
+    returns: n1array of times
+    """
+    lst = []
+    t = start
+    while t < end:
+        lst.append(t)
+        t += timestep
+    return np.array(lst)
+
 
 if __name__ == "__main__":
     main()
