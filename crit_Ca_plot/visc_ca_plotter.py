@@ -16,10 +16,13 @@ import collections
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from scipy.optimize import curve_fit
+
 
 LINE_STYLE_DICT = {0.010:"-", 0.500:"--", 1.000:"-.", 5.000:":"}
 COLOR_STYLE_DICT = {0.010:"slateblue", 0.500:"seagreen", 1.000:"firebrick", 5.000:"coral"}
 MARKER_STYLE_DICT= {0.010:"s", 0.500:"*", 1.000:".", 5.000:"X"}
+
 
 def main():
     plt.rc("font", family="sans-serif")
@@ -38,10 +41,12 @@ def main():
         unscaled_data, scaled_data = get_data(filename)
         plot_crit_Ca(unscaled_ax, unscaled_data)
         plot_crit_Ca(scaled_ax, scaled_data)
+        if abs(unscaled_data.visc_rat - 1.0) < 1e-5:
+            plot_trend(unscaled_ax, unscaled_data)
         style_cnt += 1
 
-    textstr = r"$\nu=0.65$"
-    plot_final_setup(unscaled_fig, unscaled_ax, (2, 12), r"$Ca_{crit}$", textstr)
+    textstr = r"$\nu=0.70$"
+    plot_final_setup(unscaled_fig, unscaled_ax, (5, 25), r"$Ca_{crit}$", textstr)
     plot_final_setup(scaled_fig, scaled_ax, (1, 5), r"$Ca_{crit} \cdot \sqrt{\alpha}$", textstr)
 
     unscaled_fig.savefig(unscaled_data.file_name + ".pdf", format="pdf", dpi=1000)
@@ -49,6 +54,7 @@ def main():
 
     scaled_fig.savefig(scaled_data.file_name + ".pdf", format="pdf", dpi=1000)
     plt.close(scaled_fig)
+
 
 def get_data(filename):
     """
@@ -111,6 +117,7 @@ def get_data(filename):
     scaled_data = Data_Tuple("scaled_critical_Ca_plot", "scaled critical Ca", vol_rat, visc_rat, alpha, scaled_crit_Ca, scaled_error)
     return (unscaled_data, scaled_data)
 
+
 def plot_crit_Ca(ax, plot_data):
     """
     Input the scaled or unscaled namedtuple and the the number for the line style
@@ -124,10 +131,26 @@ def plot_crit_Ca(ax, plot_data):
     for bar in barlinecols:
         bar.set_linestyle(LINE_STYLE_DICT[plot_data.visc_rat])
 
+
+def plot_trend(ax, plot_data):
+    """
+    Plots the power-law trendline
+    """
+    print(plot_data.alpha)
+    print(plot_data.Ca_data)
+    popt, pcov = curve_fit(func_powerlaw, plot_data.alpha, plot_data.Ca_data, p0 = np.asarray([-0.5, 2]))
+
+    x_trend = np.linspace(0.1, 1.)
+    ax.plot(x_trend, func_powerlaw(x_trend, *popt), "--")
+    textstr = r"$y = %.2f x^{%.2f}$" % (popt[1], popt[0])
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.42, 0.80, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+
+
 def plot_final_setup(fig, ax, y_lim, y_label, textstr):
     # textbox
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.42, 0.10, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+    ax.text(0.42, 0.60, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
     ax.set_xlabel(r"$\alpha$ (flow type)", fontsize=12)
     ax.set_ylabel(y_label, fontsize=12)
@@ -145,12 +168,6 @@ def plot_final_setup(fig, ax, y_lim, y_label, textstr):
     fig.tight_layout(rect=[0, 0, 0.95, 1])
 
 
-def expFunc(x, a, b):
-    return a * np.exp(-b * x)
-
-def asympFunc(x, a, b):
-    return a*x**(b)
-
 def str_to_bool(s):
     if s == 'True':
         return True
@@ -158,6 +175,11 @@ def str_to_bool(s):
         return False
     else:
         raise ValueError("Cannot convert {} to a bool".format(s))
+
+
+def func_powerlaw(x, m, c):
+    return x**m * c
+
 
 if __name__ == "__main__":
     main()

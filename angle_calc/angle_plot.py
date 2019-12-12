@@ -39,7 +39,7 @@ def main():
             minor_angles.append(angles[1])
             ax.plot(times, major_angles)
             textstr = '\n'.join((
-                r"$Ca={}$".format(params["shear"]),
+                r"$Ca={}$".format(params["deformRate"]),
                 r"$\alpha={}$".format(params["alpha"]),
                 r"$\lambda={}$".format(params["visc_rat"]),
                 r"$\nu={}$".format(params["vol_rat"])))
@@ -48,7 +48,7 @@ def main():
             ax.set_ylabel("Orientation Angle$ (\degree)$")
             ax.text(0.42, 0.25, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
             plt.tight_layout(rect=[0., 0., 1., 1.])
-            plt.savefig("angle_vol{0}_Ca{1}_alpha{2}_visc{3}.pdf".format(params["vol_rat"], params["shear"], params["alpha"], params["visc_rat"]), format="pdf")
+            plt.savefig("angle_vol{0}_Ca{1}_alpha{2}_visc{3}.pdf".format(params["vol_rat"], params["deformRate"], params["alpha"], params["visc_rat"]), format="pdf")
 
 
 def calc_angle(positions):

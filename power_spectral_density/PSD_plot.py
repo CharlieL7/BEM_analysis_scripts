@@ -24,7 +24,7 @@ class PSD:
     def __init__(self):
         self.length_arr = np.array([])
         self.time_arr = np.array([])
-        self.timestep = 0.001
+        self.timestep = 0.01
         self.De = 0.
         self.Ca = 0.
 
@@ -35,22 +35,26 @@ class PSD:
         """
         self.read_length_data(in_dir)
         (corr_arr, freq, fourier) = self.calc_PSD()
-        
-        lag_arr = np.arange(corr_arr.size - 1, corr_arr.size, 1)
+
+
         fig_corr = plt.figure()
         ax_corr = fig_corr.add_subplot(111)
-        ax_corr.plot(lag_arr, corr_arr)
-        ax_corr.set_xlim(left=0)
+        ax_corr.acorr(self.length_arr, usevlines=True, maxlags=50, normed=False, lw=2)
+        ax_corr.grid(True)
         fig_corr.savefig("{}_corr.pdf".format(out_filename), format="pdf")
-        fig_corr.close();
+        plt.close(fig_corr)
+        """
+        lag_arr = np.arange(-(1/2) * (corr_arr.size - 1), (1/2) * (corr_arr.size - 1) + 1, 1)
+        ax_corr.plot(lag_arr, corr_arr)
+        """
 
         fig_PSD = plt.figure()
         ax_PSD = fig_PSD.add_subplot(111)
-        ax_PSD.plot(freq, np.real(fourier), ".")
+        ax_PSD.plot(freq / self.De, np.real(fourier), ".")
         ax_PSD.set_yscale("log")
-        ax_PSD.set_xlim(left=0)
+        ax_PSD.set_xscale("log")
         fig_PSD.savefig("{}_PSD.pdf".format(out_filename), format="pdf")
-        fig_PSD.close();
+        plt.close(fig_PSD)
 
 
     def read_length_data(self, in_dir):
@@ -75,29 +79,30 @@ class PSD:
             time_list.append(params["time"])
             if file_num == 0:
                 self.De = params["De"]
-                self.Ca = params["Ca"]
+                self.Ca = params["deformRate"]
             file_num += 1
-        self.length_arr = np.array(self.length_list)
-        self.time_arr = np.array(self.time_list)
+        self.length_arr = np.array(length_list)
+        self.time_arr = np.array(time_list)
         self.length_arr = self.length_arr - np.mean(self.length_arr) # subtracting the mean
 
 
     def calc_PSD(self):
         """
         calculates the power spectral density data
-        returns : tuple of (n1array cross correlation values, n1array fourier frequencies, n1array fourier amplitudes)
+        returns : tuple of (ndarray cross correlation values, ndarray fourier frequencies,
+        ndarray fourier amplitudes)
         """
         # first interpolate the data
-        len_fun = interp1d(self.length_arr, self.time_arr, kind="linear")
+        len_fun = interp1d(self.time_arr, self.length_arr, kind="linear")
         inter_times = calc_inter_range(self.time_arr[0], self.time_arr[-1], self.timestep)
-        len_inter_arr = [ len_fun(x) for x in inter_times ]
-        
+        len_inter_arr = [len_fun(x)for x in inter_times]
+
         # cross correlate the interpolated data
         corr_arr = np.correlate(len_inter_arr, len_inter_arr, mode="full")
         fourier = np.fft.fft(corr_arr)
         n = corr_arr.size
         # getting frequencies multiplied by cycle peroid (non-dimensionalized by bending timescale)
-        freq = np.fft.fftfreq(n, d=self.timestep) / (self.De * self.Ca)
+        freq = np.fft.fftfreq(n, d=self.timestep)
         return (corr_arr, freq, fourier)
 
 
@@ -108,7 +113,7 @@ def calc_inter_range(start, end, timestep):
     start: starting time
     end: ending time
     timestep: interval for range
-    returns: n1array of times
+    returns: ndarray of times
     """
     lst = []
     t = start
