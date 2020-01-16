@@ -9,12 +9,21 @@ def pos(eta, xi, nodes):
     Parameters:
         eta : parametric coordinate, scalar
         xi : paramteric coordinate, scalar
-        nodes : three nodes of triangle as columns in 3x3 ndarray
+        nodes : three nodes of triangle as rows in 3x3 ndarray
     Returns:
         x : output position (3,) ndarray
     """
     x = (1. - eta - xi) * nodes[0] + eta * nodes[1] + xi * nodes[2]
     return x
+
+
+def make_pos(nodes):
+    """
+    Makes a function for gaussian quadrature of position
+    """
+    def quad_func(eta, xi):
+        return pos(eta, xi, nodes)
+    return quad_func
 
 
 def stresslet(x, x_0, n):
@@ -34,15 +43,17 @@ def stresslet(x, x_0, n):
     return S_ij
 
 
-def inertia_func(eta, xi, nodes):
+def make_inertia_func(nodes):
     """
     inertia function for input into int_over_tri
     """
-    x = pos(eta, xi, nodes)
-    return np.dot(x, x) * np.identity(3) - np.outer(x, x)
+    def quad_func(eta, xi):
+        x = pos(eta, xi, nodes)
+        return np.dot(x, x) * np.identity(3) - np.outer(x, x)
+    return quad_func
 
 
-def const_func(eta, xi, nodes):
+def const_func(eta, xi):
     """
     constant function for input into int_over_tri
     """

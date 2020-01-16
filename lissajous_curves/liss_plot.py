@@ -22,7 +22,6 @@ def plot_liss(in_dir, out_filename):
     out_filename: name for the output plot
     """
 
-    file_num = 0
     Ca_x_list = []
     length_list = []
     for dat_file in sorted(glob.glob(in_dir + "/*.dat")):
@@ -35,7 +34,6 @@ def plot_liss(in_dir, out_filename):
         length = td.calc_length(np.array(positions))[0]
         Ca_x_list.append(Ca_x)
         length_list.append(length)
-        file_num += 1
 
     fig = plt.figure(figsize=(4.5, 4.5))
     ax = fig.add_subplot(111)

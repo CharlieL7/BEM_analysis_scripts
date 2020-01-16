@@ -8,7 +8,7 @@ def int_over_tri(func, nodes):
 
     Parameters:
         func : function to integrate, can return any order tensor
-               expecting f(eta, xi, nodes)
+               expecting f(eta, xi)
     Returns:
         integrated function
     """
@@ -17,13 +17,13 @@ def int_over_tri(func, nodes):
     w = 1./60. * np.array([3., 8., 3., 8., 3., 8., 27.])
 
     # Gaussian quadrature points
-    f1 = func(0.0, 0.0, nodes)
-    f2 = func(0.5, 0.0, nodes)
-    f3 = func(1.0, 0.0, nodes)
-    f4 = func(0.5, 0.5, nodes)
-    f5 = func(0.0, 1.0, nodes)
-    f6 = func(0.0, 0.5, nodes)
-    f7 = func(1.0/3.0, 1.0/3.0, nodes)
+    f1 = func(0.0, 0.0)
+    f2 = func(0.5, 0.0)
+    f3 = func(1.0, 0.0)
+    f4 = func(0.5, 0.5)
+    f5 = func(0.0, 1.0)
+    f6 = func(0.0, 0.5)
+    f7 = func(1.0/3.0, 1.0/3.0)
 
     # metric function for surface area
     n = np.cross(nodes[1] - nodes[0], nodes[2] - nodes[0])
