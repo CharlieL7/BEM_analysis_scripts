@@ -39,7 +39,7 @@ def plot_liss(in_dir, out_filename):
     ax = fig.add_subplot(111)
     ax.plot(Ca_x_list, length_list, "-")
     ax.set_xlabel(r"$Ca_{x} (\frac{\mu a^3 \dot{\epsilon}}{\kappa})$", fontsize=14)
-    ax.set_ylabel(r"L/r (r = equivalent radius)", fontsize=14)
+    ax.set_ylabel(r"$L/a$", fontsize=14)
     ax.grid(True)
     fig.tight_layout(rect=[0, 0, 0.95, 1])
     plt.savefig("{}.pdf".format(out_filename), format="pdf")

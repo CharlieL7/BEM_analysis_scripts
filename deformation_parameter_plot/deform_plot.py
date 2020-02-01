@@ -42,7 +42,7 @@ def plot_deform_ratio(in_dir, out_filename):
     ax = fig.add_subplot(111)
     ax.plot(Ca_x_list, deform_ratio_list, "-")
     ax.set_xlabel(r"$Ca_{x} (\frac{\mu a^3 \dot{\epsilon}}{\kappa})$", fontsize=14)
-    ax.set_ylabel(r"Deformation parameter $\left( \frac{a - b}{a + b} \right)$", fontsize=14)
+    ax.set_ylabel(r"Deformation parameter $\left( \frac{l_x - l_y}{l_x + l_y} \right)$", fontsize=14)
     ax.set_ylim([-1, 1])
     ax.grid(True)
     fig.tight_layout(rect=[0, 0, 0.95, 1])
