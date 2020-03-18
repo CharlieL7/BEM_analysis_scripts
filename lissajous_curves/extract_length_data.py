@@ -13,9 +13,8 @@ import tec_dat as td
 
 def main():
     in_dir = sys.argv[1]
-    out_name = sys.argv[2]
-    data = read_length_data(in_dir)
-    write_length_data(data, out_name)
+    data, params = read_length_data(in_dir)
+    write_length_data(data, params)
 
 
 def read_length_data(in_dir):
@@ -29,8 +28,7 @@ def read_length_data(in_dir):
         csv.DictWriter
     """
     length_data = [] # list of maps to write
-    for dat_file in sorted(glob.glob(in_dir + "/*.dat")):
-        print(dat_file)
+    for dat_file in sorted(glob.glob(in_dir + "*.dat")):
         all_data, _f2v, params = td.read_dat(dat_file)
         positions = []
         for vert_data in all_data:
@@ -49,19 +47,26 @@ def read_length_data(in_dir):
             "minor_len": minor_len
             }
         length_data.append(tmp_map)
-    return length_data
+    return (length_data, params)
 
 
-def write_length_data(data, out_name):
+def write_length_data(data, params):
     """
     writes a list of maps out
 
     Parameters:
         data: list of maps with the same keys
-        out_name: string name of the output csv file
+        params: simulation parameters
     Returns:
         None
     """
+    out_name = "length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
+        params["vol_rat"],
+        params["W"],
+        params["strain_rate"],
+        params["visc_rat"]
+    )
+
     with open(out_name, "w", newline='') as csvfile:
         fieldnames = ["time", "Ca_x", "x_len", "y_len", "major_len", "minor_len"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -69,12 +74,12 @@ def write_length_data(data, out_name):
         writer.writerows(data)
 
 
-def ext_run(in_dir, out_name):
+def ext_run(in_dir):
     """
     For running through an external python program
     """
-    data = read_length_data(in_dir)
-    write_length_data(data, out_name)
+    data, params = read_length_data(in_dir)
+    write_length_data(data, params)
 
 
 if __name__ == "__main__":
