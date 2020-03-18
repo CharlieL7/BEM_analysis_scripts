@@ -1,14 +1,13 @@
-import csv
+"""
+Plot the Lissajous curves L vs Ca_x(t)
+"""
+
 import sys
 import glob
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 import tec_dat as td
-
-'''
-Plot the Lissajous curves L vs Ca_x(t)
-'''
 
 def main():
     in_dir = sys.argv[1]
