@@ -55,7 +55,7 @@ def write_length_data(data, params):
     writes a list of maps out
 
     Parameters:
-        data: list of maps with the same keys
+        data: list of maps with the required keys
         params: simulation parameters
     Returns:
         None

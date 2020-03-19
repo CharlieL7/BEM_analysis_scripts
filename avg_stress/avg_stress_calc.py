@@ -5,17 +5,20 @@ import numpy as np
 import slm_UF
 import gauss_quad as gq
 
-def main():
-    if len(sys.argv) != 3:
-        print("Usage: in_dir, output name")
-        sys.exit()
-    in_dir = sys.argv[1]
-    out_name = sys.argv[2]
 
-    Ca_x_list = []
-    stress_list = []
+def calc_stresslet_data(in_dir):
+    """
+    Reads in the mesh data and then calculates the stresslet at each time
+    then returns the data as a list of maps for writing into a csv and the simulation parameters
 
-    for dat_file in sorted(glob.glob(in_dir + "/*.dat")):
+    Parameters:
+        in_dir: directory of dat files
+    Returns:
+        stress_data: list of maps that can be written out using
+        csv.DictWriter
+    """
+    stress_data = []
+    for dat_file in sorted(glob.glob(in_dir + "*.dat")):
         vesicle = slm_UF.slm_UF.read_dat(dat_file)
         num_faces = vesicle.faces.shape[0]
         S = np.zeros((3, 3))
@@ -28,24 +31,66 @@ def main():
                 make_coeff_stresslet(x_ele, n_ele, v_ele, f_ele, vesicle.visc_rat),
                 x_ele
             )
-        print(vesicle.volume)
-        stress_list.append(S / (vesicle.volume * vesicle.Ca))
-        Ca_x_list.append(vesicle.Ca * np.sin(2 * np.pi * vesicle.De * vesicle.time))
-    
-    with open(out_name, "w") as out:
-        writer = csv.writer(out, delimiter=",", lineterminator="\n")
-        writer.writerow(["Ca_x", "S_xx", "S_xy", "S_xz", "S_yy", "S_yz", "S_zz"])
-        for i in range(len(stress_list)):
-            writer.writerow(
-                [
-                    Ca_x_list[i],
-                    stress_list[i][0, 0],
-                    stress_list[i][0, 1],
-                    stress_list[i][0, 2],
-                    stress_list[i][1, 1],
-                    stress_list[i][1, 2],
-                    stress_list[i][2, 2]
-                ])
+        S /= vesicle.volume * vesicle.Ca
+        Ca_x = vesicle.Ca * np.sin(2 * np.pi * vesicle.W * vesicle.time)
+        tmp_map = {
+            "time": vesicle.time,
+            "Ca_x": Ca_x,
+            "S_xx": S[0, 0],
+            "S_yy": S[1, 1],
+            "S_zz": S[2, 2],
+            "S_xy": S[0, 1],
+            "S_xz": S[0, 2],
+            "S_yz": S[1, 2],
+        }
+        stress_data.append(tmp_map)
+    params = {
+        "vol_rat": vesicle.vol_rat,
+        "visc_rat": vesicle.visc_rat,
+        "W": vesicle.W,
+        "strain_rate": vesicle.Ca,
+        "alpha" : vesicle.alpha,
+        "nvert" : vesicle.vertices.shape[0],
+        "nface" : vesicle.faces.shape[0],
+    }
+    return (stress_data, params)
+
+
+def ext_run(in_dir):
+    """
+    for running the calculation from an external python program
+
+    Parameters:
+        in_dir: directory of dat files
+        out_name: output file name
+    Returns:
+        None
+    """
+    stress_data, params = calc_stresslet_data(in_dir)
+    write_stress_data(stress_data, params)
+
+
+def write_stress_data(data, params):
+    """
+    writes the stress data to a csv file
+
+    Parameters:
+        data: list of maps with the required keys
+        out_name: output file name
+    Returns:
+        None
+    """
+    out_name = "stress_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
+        params["vol_rat"],
+        params["W"],
+        params["strain_rate"],
+        params["visc_rat"]
+    )
+    with open(out_name, "w", newline='') as out:
+        fieldnames = ["time", "Ca_x", "S_xx", "S_yy", "S_zz", "S_xy", "S_xz", "S_yz"]
+        writer = csv.DictWriter(out, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(data)
 
 
 def make_coeff_stresslet(x_ele, n_ele, v_ele, f_ele, visc_rat):
@@ -83,6 +128,14 @@ def make_coeff_stresslet(x_ele, n_ele, v_ele, f_ele, visc_rat):
         return A - (1. - visc_rat) * B
 
     return quad_func
+
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: in_dir, output name")
+        sys.exit()
+    in_dir = sys.argv[1]
+    ext_run(in_dir)
 
 
 if __name__ == "__main__":

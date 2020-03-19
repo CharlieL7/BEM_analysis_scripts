@@ -39,8 +39,10 @@ class slm_UF:
         self.f = par_dict["f"] # tractions
 
         self.visc_rat = par_dict["visc_rat"]
+        self.vol_rat = par_dict["vol_rat"]
         self.Ca = par_dict["Ca"]
-        self.De = par_dict["De"]
+        self.W = par_dict["W"]
+        self.alpha = par_dict["alpha"]
         self.time = par_dict["time"]
 
         self.surf_area = self.calc_surf_area()
@@ -62,7 +64,16 @@ class slm_UF:
         Returns:
             simple_linear_mesh class with the read in data
         """
-        visc_rat = -1
+        # strings to match to for extracting out simulation parameters
+        W_type_lines = [" W ", " De "]
+        alpha_type_lines = [" alpha "]
+        time_type_lines = [" time "]
+        visc_rat_type_lines = [" viscRat ", " visc_rat "]
+        vol_rat_type_lines = [" volRat ", " vol_rat "]
+        strain_rate_type_lines = [" deformRate ", " deform_rate ", " strainRate ", " strain_rate "]
+
+        alpha = -1
+        W = -1
         with open(in_name, 'r') as dat_file:
             is_header = True
             while is_header:
@@ -70,18 +81,18 @@ class slm_UF:
                 if tmp_line.find('#') == 0: # if first character is #
                     eq_pos = tmp_line.find('=')
                     if eq_pos != -1:
-                        if tmp_line.find("viscRat") != -1:
-                            visc_rat = float(tmp_line[eq_pos+1:])
-                        elif tmp_line.find("Ca") != -1:
-                            Ca = float(tmp_line[eq_pos+1:])
-                        elif tmp_line.find("shRate") != -1:
-                            Ca = float(tmp_line[eq_pos+1:])
-                        elif tmp_line.find("deformRate") != -1:
-                            Ca = float(tmp_line[eq_pos+1:])
-                        elif tmp_line.find("De") != -1:
-                            De = float(tmp_line[eq_pos+1:])
-                        elif tmp_line.find("time") != -1:
+                        if check_in_list(tmp_line, W_type_lines):
+                            W = float(tmp_line[eq_pos+1:])
+                        elif check_in_list(tmp_line, alpha_type_lines):
+                            alpha = float(tmp_line[eq_pos+1:])
+                        elif check_in_list(tmp_line, time_type_lines):
                             time = float(tmp_line[eq_pos+1:])
+                        elif check_in_list(tmp_line, visc_rat_type_lines):
+                            visc_rat = float(tmp_line[eq_pos+1:])
+                        elif check_in_list(tmp_line, vol_rat_type_lines):
+                            vol_rat = float(tmp_line[eq_pos+1:])
+                        elif check_in_list(tmp_line, strain_rate_type_lines):
+                            strain_rate = float(tmp_line[eq_pos+1:])
                 else:
                     is_header = False
                     # should be at VARIABLES line
@@ -125,8 +136,18 @@ class slm_UF:
                 f2v -= 1 # indexing change
             except csv.Error as e:
                 sys.exit("list_reader, file %s, line %d: %s" % (in_name, list_reader.line_num, e))
-            ret = {"x":x_data, "faces":f2v, "v":v_data, "f":f_data, "visc_rat":visc_rat,
-                    "Ca":Ca, "De":De, "time":time}
+            ret = {
+                "x":x_data,
+                "faces":f2v,
+                "v":v_data,
+                "f":f_data,
+                "visc_rat":visc_rat,
+                "vol_rat":vol_rat,
+                "Ca":strain_rate,
+                "W":W,
+                "alpha":alpha,
+                "time":time,
+            }
 
         return cls(ret)
 
@@ -346,3 +367,19 @@ class slm_UF:
             writer = csv.writer(out, delimiter=' ', lineterminator="\n")
             writer.writerows(self.vertices)
             writer.writerows(self.faces + 1)
+
+
+def check_in_list(in_string, string_list):
+    """
+    checks if a string has one of the strings in the string_list
+
+    Parameters:
+        in_string : string to test
+        string_list : strings to test for
+    Returns:
+        boolean
+    """
+    for tmp in string_list:
+        if in_string.find(tmp) != -1:
+            return True
+    return False

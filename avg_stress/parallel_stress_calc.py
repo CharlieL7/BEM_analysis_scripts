@@ -1,18 +1,18 @@
 """
-Runs extract_length_data.py on all directories in folder
-Parallelized with Process by making each direcoty a separate process
+Runs avg_stress_calc.py on all directories in folder
+Parallelized with Process by making each directory a separate process
 """
 from multiprocessing import Process
 import sys
 import glob
-import extract_length_data as ELD
+import avg_stress_calc as ASC
 
 def main():
     parentFolder = sys.argv[1]
 
     childFolders = glob.glob(parentFolder + "*/")
     processes = [
-        Process(target=ELD.ext_run, args=(childFolders[i],))
+        Process(target=ASC.ext_run, args=(childFolders[i],))
         for i in range(len(childFolders))
     ]
 
