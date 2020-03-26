@@ -26,6 +26,7 @@ def read_dat(filename):
     visc_rat_type_lines = [" viscRat ", " visc_rat "]
     vol_rat_type_lines = [" volRat ", " vol_rat "]
     strain_rate_type_lines = [" deformRate ", " deform_rate ", " strainRate ", " strain_rate "]
+    bending_mod_type_lines = [" EB ", " bending ", " kappa "]
 
     alpha = -1
     W = -1
@@ -52,6 +53,8 @@ def read_dat(filename):
                     vol_rat = float(tmp_line[eq_pos+1:])
                 elif (check_in_list(tmp_line, strain_rate_type_lines)):
                     strain_rate = float(tmp_line[eq_pos+1:])
+                elif (check_in_list(tmp_line, bending_mod_type_lines)):
+                    EB = float(tmp_line[eq_pos+1:])
             else:
                 is_header = False
                 # get the next two Tecplot lines and then go back one line
@@ -93,6 +96,8 @@ def read_dat(filename):
                 "W": W,
                 "alpha": alpha, 
                 "strain_rate": strain_rate,
+                "EB": EB,
+                "Ca": strain_rate / EB,
                 "time": time,
                 "nvert": nvert,
                 "nface": nface,

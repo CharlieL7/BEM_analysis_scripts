@@ -13,8 +13,10 @@ import numpy as np
 def main():
     in_dir = sys.argv[1]
     for csv_file in sorted(glob.glob(in_dir + "*.csv")):
+        print("=================================")
         print(csv_file)
         print(determine_regime(csv_file))
+        print()
 
 
 class Regime(Enum):

@@ -35,7 +35,8 @@ def read_length_data(in_dir):
             pos_data = [float(x) for x in vert_data[0:3]]
             positions.append(pos_data)
         time = params["time"]
-        Ca_x = -params["strain_rate"] * math.sin(2 * math.pi * params["W"] * params["time"])
+        Ca = params["strain_rate"] / params["EB"]
+        Ca_x = Ca * math.sin(2 * math.pi * params["W"] * params["time"])
         x_len, y_len = td.calc_xy_lengths(np.array(positions))
         major_len, minor_len = td.calc_major_minor_lengths(np.array(positions))
         tmp_map = {
@@ -63,7 +64,7 @@ def write_length_data(data, params):
     out_name = "length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
         params["vol_rat"],
         params["W"],
-        params["strain_rate"],
+        params["Ca"],
         params["visc_rat"]
     )
 
