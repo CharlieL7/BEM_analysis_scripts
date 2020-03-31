@@ -42,6 +42,7 @@ class slm_UF:
         self.vol_rat = par_dict["vol_rat"]
         self.Ca = par_dict["Ca"]
         self.W = par_dict["W"]
+        self.EB = par_dict["EB"]
         self.alpha = par_dict["alpha"]
         self.time = par_dict["time"]
 
@@ -66,6 +67,7 @@ class slm_UF:
         """
         # strings to match to for extracting out simulation parameters
         W_type_lines = [" W ", " De "]
+        EB_type_lines = [" EB ", " Eb ", " kappa "]
         alpha_type_lines = [" alpha "]
         time_type_lines = [" time "]
         visc_rat_type_lines = [" viscRat ", " visc_rat "]
@@ -93,6 +95,8 @@ class slm_UF:
                             vol_rat = float(tmp_line[eq_pos+1:])
                         elif check_in_list(tmp_line, strain_rate_type_lines):
                             strain_rate = float(tmp_line[eq_pos+1:])
+                        elif check_in_list(tmp_line, EB_type_lines):
+                            EB = float(tmp_line[eq_pos+1:])
                 else:
                     is_header = False
                     # should be at VARIABLES line
@@ -145,6 +149,7 @@ class slm_UF:
                 "vol_rat":vol_rat,
                 "Ca":strain_rate,
                 "W":W,
+                "EB":EB,
                 "alpha":alpha,
                 "time":time,
             }

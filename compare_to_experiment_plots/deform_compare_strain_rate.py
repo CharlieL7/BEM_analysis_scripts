@@ -62,7 +62,7 @@ def read_exp_data(file_name, **kwargs):
     skiprows = 0
     Ca_x_list = []
     D_list = []
-    if "skiprows" in kwargs:
+    if kwargs.get("skiprows", False):
         skiprows = kwargs["skiprows"]
     with open(file_name, newline='') as csv_file:
         a = 0

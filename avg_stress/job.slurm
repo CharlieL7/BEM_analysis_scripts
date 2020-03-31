@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-#SBATCH --job-name=extract_length_data
-#SBATCH --output=extract_length_output.txt
+#SBATCH --job-name=extract_stress_data
+#SBATCH --output=extract_stress_data.txt
 #
 #SBATCH --account=debug
 #SBATCH --ntasks=2

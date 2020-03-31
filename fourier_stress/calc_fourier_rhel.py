@@ -5,23 +5,33 @@ and then plots the results
 import sys
 import csv
 import os
+import glob
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 def main():
-    in_csv = sys.argv[1]
-    freq, fourier = read_stress_data(in_csv)
-    plot_fourier(freq, fourier, os.path.basename(in_csv))
+    """
+    works on a directory of csv files with stresslet data
+    with the ending "/"
+    example: "/home/user/tmp/"
+    """
+    in_dir = sys.argv[1]
+    for csv_file in sorted(glob.glob(in_dir + "*.csv")):
+        freq, fourier = read_stress_data(csv_file)
+        base = os.path.basename(csv_file)
+        name_only = os.path.splitext(base)[0]
+        plot_fourier(freq, fourier, name_only + "S_1")
 
 
-def read_stress_data(in_csv):
+def read_stress_data(in_csv, **kwargs):
     """
     Reads in the stress data from a csv file
     tsv file should also work
 
     Parameters:
         in_csv: csv file to read
+        ts: optional timestep setting
     Returns:
         stress_data: stress data as list of dictionaries
     """
@@ -41,15 +51,30 @@ def read_stress_data(in_csv):
 
     S_1 = np.array(S_1)
     S_2 = np.array(S_2)
-    
-    ts = 0.001
-    # first interpolate the data, might be needed
-    S_1_fun = interp1d(time, S_1, kind="linear")
-    inter_times = calc_inter_range(time[0], time[-1], ts)
-    S_1_inter = [S_1_fun(x) for x in inter_times]
+    return (time, [S_1, S_2])
 
-    fourier = np.fft.fft(S_1_inter)
-    n = len(S_1_inter)
+
+def calc_fourier(time, data, **kwargs):
+    """
+    Calculates the Fourier transformation of data
+    Also does linear interpolation of the data incase the
+    timestep changes
+
+    Parameters:
+        time: array of the time data
+        data: array of the data, same length as time array
+    Output:
+        (freq, fourier), frequency bins and amplitudes as numpy arrays
+    """
+    ts = 0.001
+    if kwargs.get("ts", False):
+        ts = kwargs["ts"]
+    data_fun = interp1d(time, data, kind="linear")
+    inter_times = calc_inter_range(time[0], time[-1], ts)
+    data_inter = [data_fun(x) for x in inter_times]
+
+    fourier = np.fft.fft(data_inter)
+    n = len(data_inter)
     freq = np.fft.fftfreq(n, d=ts)
     return(freq, fourier)
 
