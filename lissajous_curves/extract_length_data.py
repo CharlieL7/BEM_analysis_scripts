@@ -70,10 +70,10 @@ def write_length_data(data, params):
 
     with open(out_name, "w", newline='') as csvfile:
         # write the simulation parameters
-        csvfile.write("# volRat = {}".format(params["vol_rat"]))
-        csvfile.write("# viscRat= {}".format(params["visc_rat"]))
-        csvfile.write("# Ca = {}".format(params["Ca"]))
-        csvfile.write("# W = {}".format(params["W"]))
+        csvfile.write("# volRat = {}\n".format(params["vol_rat"]))
+        csvfile.write("# viscRat= {}\n".format(params["visc_rat"]))
+        csvfile.write("# Ca = {}\n".format(params["Ca"]))
+        csvfile.write("# W = {}\n".format(params["W"]))
         fieldnames = ["time", "Ca_x", "x_len", "y_len", "major_len", "minor_len"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

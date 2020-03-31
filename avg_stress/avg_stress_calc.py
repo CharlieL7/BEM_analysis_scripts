@@ -89,10 +89,10 @@ def write_stress_data(data, params):
     )
     with open(out_name, "w", newline='') as out:
         # write the simulation parameters
-        out.write("# volRat = {}".format(params["vol_rat"]))
-        out.write("# viscRat= {}".format(params["visc_rat"]))
-        out.write("# Ca = {}".format(params["strain_rate"] / params["EB"]))
-        out.write("# W = {}".format(params["W"]))
+        out.write("# volRat = {}\n".format(params["vol_rat"]))
+        out.write("# viscRat= {}\n".format(params["visc_rat"]))
+        out.write("# Ca = {}\n".format(params["strain_rate"] / params["EB"]))
+        out.write("# W = {}\n".format(params["W"]))
         fieldnames = ["time", "Ca_x", "S_xx", "S_yy", "S_zz", "S_xy", "S_xz", "S_yz"]
         writer = csv.DictWriter(out, fieldnames=fieldnames)
         writer.writeheader()
