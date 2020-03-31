@@ -87,8 +87,12 @@ def write_stress_data(data, params):
         params["visc_rat"]
     )
     with open(out_name, "w", newline='') as out:
+        # write the simulation parameters
+        out.write("# W = {}".format(params["W"]))
+        out.write("
         fieldnames = ["time", "Ca_x", "S_xx", "S_yy", "S_zz", "S_xy", "S_xz", "S_yz"]
         writer = csv.DictWriter(out, fieldnames=fieldnames)
+        writer.writerow
         writer.writeheader()
         writer.writerows(data)
 
