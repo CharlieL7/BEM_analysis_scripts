@@ -66,7 +66,7 @@ class slm_UF:
             simple_linear_mesh class with the read in data
         """
         # strings to match to for extracting out simulation parameters
-        W_type_lines = [" W ", " De "]
+        W_type_lines = [" W ", " De "] # Also De as previous simulations misnamed this
         EB_type_lines = [" EB ", " Eb ", " kappa "]
         alpha_type_lines = [" alpha "]
         time_type_lines = [" time "]

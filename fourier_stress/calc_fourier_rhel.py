@@ -18,25 +18,72 @@ def main():
     """
     in_dir = sys.argv[1]
     for csv_file in sorted(glob.glob(in_dir + "*.csv")):
-        freq, fourier = read_stress_data(csv_file)
         base = os.path.basename(csv_file)
         name_only = os.path.splitext(base)[0]
-        plot_fourier(freq, fourier, name_only + "S_1")
+        data_map = read_stress_data(csv_file)
+        freq_S1, amp_S1 = calc_fourier(data_map["time"], data_map["S_1"])
+        freq_S2, amp_S2 = calc_fourier(data_map["time"], data_map["S_2"])
+        fig_S1, ax_S1 = plot_fourier(freq_S1, amp_S1)
+        fig_S2, ax_S2 = plot_fourier(freq_S2, amp_S2)
+        add_textbox(ax_S1, r"$S_{{yy}} - S_{{xx}}$"
+            "\n"
+            r"W = {:.3f}".format(data_map["W"]) +
+            "\n"
+            r"Ca = {:.3f}".format(data_map["Ca"]) +
+            "\n"
+            r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
+            "\n"
+            r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
+        )
+        add_textbox(ax_S2, r"$S_{{yy}} - S_{{zz}}$"
+            "\n"
+            r"W = {:.3f}".format(data_map["W"]) +
+            "\n"
+            r"Ca = {:.3f}".format(data_map["Ca"]) +
+            "\n"
+            r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
+            "\n"
+            r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
+        )
+        fig_S1.savefig("{}.pdf".format(name_only + "S_1"), format="pdf")
+        fig_S2.savefig("{}.pdf".format(name_only + "S_2"), format="pdf")
 
 
-def read_stress_data(in_csv, **kwargs):
+def read_stress_data(in_csv):
     """
     Reads in the stress data from a csv file
-    tsv file should also work
+    also handles the simulation parameters
 
     Parameters:
         in_csv: csv file to read
-        ts: optional timestep setting
     Returns:
-        stress_data: stress data as list of dictionaries
+        data: times, stresses, and parameters as map
     """
+    W_type_lines = [" W "]
+    Ca_type_lines = [" Ca ", " ca ", " capillary_number "]
+    visc_rat_type_lines = [" viscRat ", " visc_rat "]
+    vol_rat_type_lines = [" volRat ", " vol_rat "]
     stress_data = []
     with open(in_csv, newline='') as csv_file:
+        is_header = True
+        while is_header:
+            last_pos = csv_file.tell()
+            tmp_line = csv_file.readline()
+            if tmp_line.find('#') == 0: # if first character is #
+                eq_pos = tmp_line.find('=')
+                if eq_pos != -1:
+                    if check_in_list(tmp_line, W_type_lines):
+                        W = float(tmp_line[eq_pos+1:])
+                    elif check_in_list(tmp_line, Ca_type_lines):
+                        Ca = float(tmp_line[eq_pos+1:])
+                    elif check_in_list(tmp_line, visc_rat_type_lines):
+                        visc_rat = float(tmp_line[eq_pos+1:])
+                    elif check_in_list(tmp_line, vol_rat_type_lines):
+                        vol_rat = float(tmp_line[eq_pos+1:])
+            else:
+                is_header = False
+                # need to move nack a line for DictReader to get keys
+                csv_file.seek(last_pos)
         reader = csv.DictReader(csv_file)
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items())
@@ -51,7 +98,16 @@ def read_stress_data(in_csv, **kwargs):
 
     S_1 = np.array(S_1)
     S_2 = np.array(S_2)
-    return (time, [S_1, S_2])
+    data = {
+        "time": np.array(time),
+        "S_1": np.array(S_1),
+        "S_2": np.array(S_2),
+        "W": W,
+        "Ca": Ca,
+        "visc_rat": visc_rat,
+        "vol_rat": vol_rat,
+    }
+    return data
 
 
 def calc_fourier(time, data, **kwargs):
@@ -63,6 +119,7 @@ def calc_fourier(time, data, **kwargs):
     Parameters:
         time: array of the time data
         data: array of the data, same length as time array
+        [ts]: optional timestep setting
     Output:
         (freq, fourier), frequency bins and amplitudes as numpy arrays
     """
@@ -79,26 +136,39 @@ def calc_fourier(time, data, **kwargs):
     return(freq, fourier)
 
 
-def plot_fourier(freq, fourier, out_name):
+def plot_fourier(freq, amp):
     """
     Plots the Fourier decomposition of the data
 
     Parameters:
         freq: the frequency bins for the Fourier transform
-        fourier: the array of complex Fourier values
-        out_name: output name of figure
+        amp: the array of complex Fourier amplitudes values
     Returns:
-        None
+        fig: the figure created
+        ax: the axes object created
     """
     fig = plt.figure(figsize=(4.5, 4.5))
-    fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(freq, rescale_arr(np.abs(fourier)), ".-")
+    ax.plot(freq, rescale_arr(np.abs(amp)), ".-")
     ax.set_xlim((0, 15))
     ax.set_xlabel(r"Frequency")
     ax.set_ylabel(r"Amplitude")
     fig.tight_layout(rect=[0, 0, 0.95, 1])
-    fig.savefig("{}.pdf".format(out_name), format="pdf")
+    return fig, ax
+
+
+def add_textbox(ax, textstr):
+    """
+    Adds an informative textbox to to figure
+
+    Parameters:
+        ax: the axes object
+        textstr: the string in the textbox
+    Returns:
+        None
+    """
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+    ax.text(0.42, 0.60, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
 
 def rescale_arr(arr):
@@ -129,6 +199,22 @@ def calc_inter_range(start, end, timestep):
         lst.append(t)
         t += timestep
     return np.array(lst)
+
+
+def check_in_list(in_string, string_list):
+    """
+    checks if a string has one of the strings in the string_list
+
+    Parameters:
+        in_string : string to test
+        string_list : strings to test for
+    Returns:
+        boolean
+    """
+    for tmp in string_list:
+        if in_string.find(tmp) != -1:
+            return True
+    return False
 
 
 if __name__ == "__main__":

@@ -37,8 +37,8 @@ def read_sim_data(file_name):
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
             time = row["time"]
-            Ca = 55.7
-            De = 2.4
+            Ca = 77.6
+            De = 2.6
             Ca_x = -Ca * math.sin(2 * math.pi * De/Ca * time)
             Ca_x_list.append(Ca_x)
             D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
@@ -72,7 +72,7 @@ def read_exp_data(file_name, **kwargs):
         reader = csv.DictReader(csv_file, delimiter="\t")
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
-            Ca_x_list.append(row["Ca_x"])
+            Ca_x_list.append(-row["Ca_x"])
             D_list.append(row["D"])
     Ca_x_arr = np.array(Ca_x_list)
     D_arr = np.array(D_list)

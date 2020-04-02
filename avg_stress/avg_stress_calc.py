@@ -84,13 +84,13 @@ def write_stress_data(data, params):
     out_name = "stress_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
         params["vol_rat"],
         params["W"],
-        params["strain_rate"],
+        params["strain_rate"]/ params["EB"],
         params["visc_rat"]
     )
     with open(out_name, "w", newline='') as out:
         # write the simulation parameters
         out.write("# volRat = {}\n".format(params["vol_rat"]))
-        out.write("# viscRat= {}\n".format(params["visc_rat"]))
+        out.write("# viscRat = {}\n".format(params["visc_rat"]))
         out.write("# Ca = {}\n".format(params["strain_rate"] / params["EB"]))
         out.write("# W = {}\n".format(params["W"]))
         fieldnames = ["time", "Ca_x", "S_xx", "S_yy", "S_zz", "S_xy", "S_xz", "S_yz"]
