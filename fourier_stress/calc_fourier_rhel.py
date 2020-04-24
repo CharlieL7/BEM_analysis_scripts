@@ -10,6 +10,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
+W_TYPE_LINES = [" W "]
+CA_TYPE_LINES = [" Ca ", " ca ", " capillary_number "]
+VISC_RAT_TYPE_LINES = [" viscRat ", " visc_rat "]
+VOL_RAT_TYPE_LINES = [" volRat ", " vol_rat "]
+
 def main():
     """
     works on a directory of csv files with stresslet data
@@ -18,16 +23,16 @@ def main():
     """
     in_dir = sys.argv[1]
     for csv_file in sorted(glob.glob(in_dir + "*.csv")):
-        base = os.path.basename(csv_file)
-        name_only = os.path.splitext(base)[0]
         data_map = read_stress_data(csv_file)
+        out_name = "fourier_data_abs_vol_{0:.3f}_De_{1:.3f}_Ca_{2:.3f}".format(
+            data_map["vol_rat"], data_map["De"], data_map["Ca"])
         freq_S1, amp_S1 = calc_fourier(data_map["time"], data_map["S_1"])
         freq_S2, amp_S2 = calc_fourier(data_map["time"], data_map["S_2"])
-        fig_S1, ax_S1 = plot_fourier(freq_S1, amp_S1)
-        fig_S2, ax_S2 = plot_fourier(freq_S2, amp_S2)
-        add_textbox(ax_S1, r"$S_{{yy}} - S_{{xx}}$"
+        fig_S1, ax_S1 = plot_fourier(freq_S1 / data_map["De"], amp_S1)
+        fig_S2, ax_S2 = plot_fourier(freq_S2 / data_map["De"], amp_S2)
+        add_textbox(ax_S1, r"$S_{{xx}} - S_{{yy}}$"
             "\n"
-            r"W = {:.3f}".format(data_map["W"]) +
+            r"De = {:.3f}".format(data_map["De"]) +
             "\n"
             r"Ca = {:.3f}".format(data_map["Ca"]) +
             "\n"
@@ -37,7 +42,7 @@ def main():
         )
         add_textbox(ax_S2, r"$S_{{yy}} - S_{{zz}}$"
             "\n"
-            r"W = {:.3f}".format(data_map["W"]) +
+            r"De = {:.3f}".format(data_map["De"]) +
             "\n"
             r"Ca = {:.3f}".format(data_map["Ca"]) +
             "\n"
@@ -45,8 +50,10 @@ def main():
             "\n"
             r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
         )
-        fig_S1.savefig("{}.pdf".format(name_only + "S_1"), format="pdf")
-        fig_S2.savefig("{}.pdf".format(name_only + "S_2"), format="pdf")
+        fig_S1.savefig("{}.pdf".format(out_name + "_S1"), format="pdf")
+        fig_S2.savefig("{}.pdf".format(out_name + "_S2"), format="pdf")
+        plt.close(fig_S1)
+        plt.close(fig_S2)
 
 
 def read_stress_data(in_csv):
@@ -59,10 +66,6 @@ def read_stress_data(in_csv):
     Returns:
         data: times, stresses, and parameters as map
     """
-    W_type_lines = [" W "]
-    Ca_type_lines = [" Ca ", " ca ", " capillary_number "]
-    visc_rat_type_lines = [" viscRat ", " visc_rat "]
-    vol_rat_type_lines = [" volRat ", " vol_rat "]
     stress_data = []
     with open(in_csv, newline='') as csv_file:
         is_header = True
@@ -72,17 +75,17 @@ def read_stress_data(in_csv):
             if tmp_line.find('#') == 0: # if first character is #
                 eq_pos = tmp_line.find('=')
                 if eq_pos != -1:
-                    if check_in_list(tmp_line, W_type_lines):
+                    if check_in_list(tmp_line, W_TYPE_LINES):
                         W = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, Ca_type_lines):
+                    elif check_in_list(tmp_line, CA_TYPE_LINES):
                         Ca = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, visc_rat_type_lines):
+                    elif check_in_list(tmp_line, VISC_RAT_TYPE_LINES):
                         visc_rat = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, vol_rat_type_lines):
+                    elif check_in_list(tmp_line, VOL_RAT_TYPE_LINES):
                         vol_rat = float(tmp_line[eq_pos+1:])
             else:
                 is_header = False
-                # need to move nack a line for DictReader to get keys
+                # need to move back a line for DictReader to get keys
                 csv_file.seek(last_pos)
         reader = csv.DictReader(csv_file)
         for row in reader:
@@ -92,8 +95,8 @@ def read_stress_data(in_csv):
     S_1 = []
     S_2 = []
     for row in stress_data:
-        time.append(row["time"])
-        S_1.append(row["S_yy"] - row["S_xx"])
+        time.append(row["time"] / Ca) # convert to time non-dim by bending timescale
+        S_1.append(row["S_xx"] - row["S_yy"])
         S_2.append(row["S_yy"] - row["S_zz"])
 
     S_1 = np.array(S_1)
@@ -103,6 +106,7 @@ def read_stress_data(in_csv):
         "S_1": np.array(S_1),
         "S_2": np.array(S_2),
         "W": W,
+        "De": W * Ca,
         "Ca": Ca,
         "visc_rat": visc_rat,
         "vol_rat": vol_rat,
@@ -149,9 +153,10 @@ def plot_fourier(freq, amp):
     """
     fig = plt.figure(figsize=(4.5, 4.5))
     ax = fig.add_subplot(111)
-    ax.plot(freq, rescale_arr(np.abs(amp)), ".-")
+    ax.plot(freq, np.abs(amp), ".-")
     ax.set_xlim((0, 15))
-    ax.set_xlabel(r"Frequency")
+    plt.xticks(np.arange(0, 15+1, 1.0))
+    ax.set_xlabel(r"Frequency / De")
     ax.set_ylabel(r"Amplitude")
     fig.tight_layout(rect=[0, 0, 0.95, 1])
     return fig, ax
