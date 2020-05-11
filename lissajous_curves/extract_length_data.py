@@ -61,7 +61,7 @@ def write_length_data(data, params):
     Returns:
         None
     """
-    out_name = "length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
+    out_name = "oblate_length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
         params["vol_rat"],
         params["W"],
         params["Ca"],
@@ -71,7 +71,7 @@ def write_length_data(data, params):
     with open(out_name, "w", newline='') as csvfile:
         # write the simulation parameters
         csvfile.write("# volRat = {}\n".format(params["vol_rat"]))
-        csvfile.write("# viscRat= {}\n".format(params["visc_rat"]))
+        csvfile.write("# viscRat = {}\n".format(params["visc_rat"]))
         csvfile.write("# Ca = {}\n".format(params["Ca"]))
         csvfile.write("# W = {}\n".format(params["W"]))
         fieldnames = ["time", "Ca_x", "x_len", "y_len", "major_len", "minor_len"]
