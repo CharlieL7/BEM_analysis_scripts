@@ -20,7 +20,7 @@ def read_dat(filename):
         params: dict of all other values taken from file
     """
     # strings to match to for extracting out simulation parameters
-    W_type_lines = [" W ", " De "]
+    W_type_lines = [" W ", " De "] # this takes into account how earlier simulations noted W incorrectly
     alpha_type_lines = [" alpha "]
     time_type_lines = [" time "]
     visc_rat_type_lines = [" viscRat ", " visc_rat "]
