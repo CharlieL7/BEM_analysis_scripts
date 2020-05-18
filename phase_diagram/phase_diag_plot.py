@@ -9,9 +9,10 @@ from matplotlib.ticker import (MultipleLocator, FormatStrFormatter,
                                AutoMinorLocator)
 
 out_name = sys.argv[1]
-w_high, Ca_high, De_high = np.loadtxt("quasispherical results - vol090_High.tsv", skiprows=4, unpack=True)
-w_medium, Ca_medium, De_medium = np.loadtxt("quasispherical results - vol090_Medium.tsv", skiprows=4, unpack=True)
-w_low, Ca_low, De_low = np.loadtxt("quasispherical results - vol090_Low.tsv", skiprows=4, unpack=True)
+De_high, Ca_high = np.loadtxt("high_strain_list.csv", skiprows=1, delimiter=",", unpack=True)
+De_medium, Ca_medium = np.loadtxt("med_strain_list.csv", skiprows=1, delimiter=",", unpack=True)
+De_low, Ca_low = np.loadtxt("low_strain_list.csv", skiprows=1, delimiter=",", unpack=True)
+
 fig = plt.figure(figsize=(4.5, 4.5))
 ax = fig.add_subplot(111)
 ax.plot(De_high, Ca_high, "o", label="high strain")
@@ -30,6 +31,6 @@ ax.yaxis.set_major_formatter(FormatStrFormatter('%d'))
 ax.yaxis.set_minor_locator(MultipleLocator(1))
 ax.grid(True)
 ax.grid(True, which="minor")
-ax.legend(title=r"$\nu = 0.90, \lambda = 1.00$", loc="lower right", bbox_to_anchor=(0.90, 0.60))
+ax.legend(title=r"$\nu = 0.80, \lambda = 1.00$", loc="lower right", bbox_to_anchor=(0.90, 0.60))
 fig.tight_layout(rect=[0, 0, 0.95, 1])
 fig.savefig("{}".format(out_name), format="pdf")

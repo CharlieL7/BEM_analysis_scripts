@@ -21,13 +21,16 @@ def main():
     med_strain_list = []
     low_strain_list = []
     for csv_file in sorted(glob.glob(in_dir + "*.csv")):
-        res = determine_regime(csv_file, skipcycles=cycle_skip)
-        if res["regime"] == Regime.HIGH_STRAIN:
-            high_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
-        elif res["regime"] == Regime.MEDIUM_STRAIN:
-            med_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
-        else:
-            low_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+        try:
+            res = determine_regime(csv_file, skipcycles=cycle_skip)
+            if res["regime"] == Regime.HIGH_STRAIN:
+                high_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+            elif res["regime"] == Regime.MEDIUM_STRAIN:
+                med_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+            elif res["regime"] == Regime.LOW_STRAIN:
+                low_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+        except IOError as err:
+            print("IOError for csv file: {}, ".format(csv_file), err)
 
     fieldnames = ["De", "Ca",]
     with open("high_strain_list.csv", "w", newline='') as csvfile:
@@ -53,7 +56,8 @@ class Regime(Enum):
 def determine_regime(file_name, **kwargs):
     """
     Determines which LAOE dynamical regime the simulation is in.
-    Handles the header variables and skips a number of initial cycles, default 5
+    Handles the header variables and skips a number of initial cycles, default 6
+    If not atleast 10 cycles returns -1
 
     Parameters:
         file_name: string of csv file name
@@ -63,7 +67,8 @@ def determine_regime(file_name, **kwargs):
         Regime enum
     """
     D_list = []
-    skipcycles = 0
+    time_list = []
+    skipcycles = 6
     if kwargs.get("skipcycles", False):
         skipcycles = int(kwargs["skipcycles"])
     with open(file_name, newline='') as csv_file:
@@ -89,9 +94,14 @@ def determine_regime(file_name, **kwargs):
         reader = csv.DictReader(csv_file)
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
+            time_list.append(row["time"])
             if row["time"] > (skipcycles/W): # only add value if after certain number of cycles
                 D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
     D_arr = np.array(D_list)
+    period = 1./W
+    if time_list[-1] < 10*period:
+        raise IOError("Not enough cycles in data")
+
     try:
         max_val = D_arr.max()
         min_val = D_arr.min()
