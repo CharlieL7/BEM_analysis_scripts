@@ -28,32 +28,27 @@ def main():
             data_map["vol_rat"], data_map["De"], data_map["Ca"])
         freq_S1, amp_S1 = calc_fourier(data_map["time"], data_map["S_1"])
         freq_S2, amp_S2 = calc_fourier(data_map["time"], data_map["S_2"])
-        fig_S1, ax_S1 = plot_fourier(freq_S1 / data_map["De"], amp_S1)
-        fig_S2, ax_S2 = plot_fourier(freq_S2 / data_map["De"], amp_S2)
-        add_textbox(ax_S1, r"$S_{{xx}} - S_{{yy}}$"
-            "\n"
-            r"De = {:.3f}".format(data_map["De"]) +
-            "\n"
-            r"Ca = {:.3f}".format(data_map["Ca"]) +
-            "\n"
-            r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
-            "\n"
-            r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
-        )
-        add_textbox(ax_S2, r"$S_{{yy}} - S_{{zz}}$"
-            "\n"
-            r"De = {:.3f}".format(data_map["De"]) +
-            "\n"
-            r"Ca = {:.3f}".format(data_map["Ca"]) +
-            "\n"
-            r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
-            "\n"
-            r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
-        )
-        fig_S1.savefig("{}.pdf".format(out_name + "_S1"), format="pdf")
-        fig_S2.savefig("{}.pdf".format(out_name + "_S2"), format="pdf")
-        plt.close(fig_S1)
-        plt.close(fig_S2)
+        fig = plt.figure(figsize=(4.5, 4.5))
+        ax = fig.add_subplot(111)
+        ax.plot(freq_S1 / data_map["De"], np.abs(amp_S1), ".-", label=r"$N_1$")
+        ax.plot(freq_S2 / data_map["De"], np.abs(amp_S2), ".-", label=r"$N_2$")
+        ax.legend(loc="upper right")
+        ax.set_xlim((0, 15))
+        plt.xticks(np.arange(0, 15+1, 1.0))
+        ax.set_xlabel(r"Frequency / De")
+        ax.set_ylabel(r"Amplitude")
+        add_textbox(ax,
+                    r"De = {:.3f}".format(data_map["De"]) +
+                    "\n"
+                    r"Ca = {:.3f}".format(data_map["Ca"]) +
+                    "\n"
+                    r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
+                    "\n"
+                    r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
+                   )
+        fig.tight_layout(rect=[0, 0, 0.95, 1])
+        fig.savefig("{}.pdf".format(out_name), format="pdf")
+        plt.close(fig)
 
 
 def read_stress_data(in_csv):
@@ -140,28 +135,6 @@ def calc_fourier(time, data, **kwargs):
     return(freq, fourier)
 
 
-def plot_fourier(freq, amp):
-    """
-    Plots the Fourier decomposition of the data
-
-    Parameters:
-        freq: the frequency bins for the Fourier transform
-        amp: the array of complex Fourier amplitudes values
-    Returns:
-        fig: the figure created
-        ax: the axes object created
-    """
-    fig = plt.figure(figsize=(4.5, 4.5))
-    ax = fig.add_subplot(111)
-    ax.plot(freq, np.abs(amp), ".-")
-    ax.set_xlim((0, 15))
-    plt.xticks(np.arange(0, 15+1, 1.0))
-    ax.set_xlabel(r"Frequency / De")
-    ax.set_ylabel(r"Amplitude")
-    fig.tight_layout(rect=[0, 0, 0.95, 1])
-    return fig, ax
-
-
 def add_textbox(ax, textstr):
     """
     Adds an informative textbox to to figure
@@ -173,7 +146,7 @@ def add_textbox(ax, textstr):
         None
     """
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.42, 0.60, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+    ax.text(0.70, 0.80, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
 
 def rescale_arr(arr):

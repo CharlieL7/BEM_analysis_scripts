@@ -17,11 +17,31 @@ VOL_RAT_TYPE_LINES = [" volRat ", " vol_rat "]
 def main():
     in_dir = sys.argv[1]
     cycle_skip = sys.argv[2]
+    high_strain_list = []
+    med_strain_list = []
+    low_strain_list = []
     for csv_file in sorted(glob.glob(in_dir + "*.csv")):
-        print("=================================")
-        print(csv_file)
-        print(determine_regime(csv_file, skipcycles=cycle_skip))
-        print()
+        res = determine_regime(csv_file, skipcycles=cycle_skip)
+        if res["regime"] == Regime.HIGH_STRAIN:
+            high_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+        elif res["regime"] == Regime.MEDIUM_STRAIN:
+            med_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+        else:
+            low_strain_list.append({"De": res["De"], "Ca": res["Ca"]})
+
+    fieldnames = ["De", "Ca",]
+    with open("high_strain_list.csv", "w", newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(high_strain_list)
+    with open("med_strain_list.csv", "w", newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(med_strain_list)
+    with open("low_strain_list.csv", "w", newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(low_strain_list)
 
 
 class Regime(Enum):
@@ -71,22 +91,20 @@ def determine_regime(file_name, **kwargs):
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
             if row["time"] > (skipcycles/W): # only add value if after certain number of cycles
                 D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
-    print("De: {}".format(Ca * W))
-    print("Ca: {}".format(Ca))
-    print("viscosity ratio: {}".format(visc_rat))
-    print("reduced volume: {}".format(vol_rat))
     D_arr = np.array(D_list)
-    max_val = D_arr.max()
-    min_val = D_arr.min()
+    try:
+        max_val = D_arr.max()
+        min_val = D_arr.min()
+    except ValueError as e:
+        print("skipcycles failed on {}".format(file_name))
+        print(e)
     diff = math.fabs(max_val) - math.fabs(min_val)
-    print("Maximum value: {}".format(max_val))
-    print("Mimumum value: {}".format(min_val))
     if diff < 1E-03:
-        return Regime.HIGH_STRAIN
+        return {"regime": Regime.HIGH_STRAIN, "De": Ca * W, "Ca": Ca}
     elif min_val < 0:
-        return Regime.MEDIUM_STRAIN
+        return {"regime": Regime.MEDIUM_STRAIN, "De": Ca * W, "Ca": Ca}
     elif min_val > 0:
-        return Regime.LOW_STRAIN
+        return {"regime": Regime.LOW_STRAIN, "De": Ca * W, "Ca": Ca}
     else:
         print("Regime determination error")
 
