@@ -26,7 +26,7 @@ def read_dat(filename):
     visc_rat_type_lines = [" viscRat ", " visc_rat "]
     vol_rat_type_lines = [" volRat ", " vol_rat "]
     strain_rate_type_lines = [" deformRate ", " deform_rate ", " strainRate ", " strain_rate "]
-    bending_mod_type_lines = [" EB ", " bending ", " kappa "]
+    bending_mod_type_lines = [" EB ", "EB= ", " bending ", " kappa "]
 
     alpha = -1
     W = -1
