@@ -113,11 +113,11 @@ def determine_regime(file_name, **kwargs):
         print(e)
     diff = math.fabs(max_val) - math.fabs(min_val)
     if diff < 1E-02 and np.sign(max_val) != np.sign(min_val):
-        return {"regime": Regime.HIGH_STRAIN, "De": Ca * W, "Ca": Ca, "max":max_val, "min":min_val}
+        return {"regime": Regime.HIGH_STRAIN, "De":  W, "Ca": Ca, "max":max_val, "min":min_val}
     elif np.sign(max_val) != np.sign(min_val): # edge case of value being exactly 0 has np.sign() return 0
-        return {"regime": Regime.MEDIUM_STRAIN, "De": Ca * W, "Ca": Ca, "max":max_val, "min":min_val}
+        return {"regime": Regime.MEDIUM_STRAIN, "De":  W, "Ca": Ca, "max":max_val, "min":min_val}
     elif np.sign(max_val) == np.sign(min_val):
-        return {"regime": Regime.LOW_STRAIN, "De": Ca * W, "Ca": Ca, "max":max_val, "min":min_val}
+        return {"regime": Regime.LOW_STRAIN, "De":  W, "Ca": Ca, "max":max_val, "min":min_val}
     else: # maybe unneeded
         print("Regime determination error")
 
