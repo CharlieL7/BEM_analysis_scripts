@@ -3,11 +3,9 @@ Checks all of the simulation csv files in folder have reached a specified
 number of oscillatory flow cycles
 """
 import csv
-import math
 import glob
-import sys
-import numpy as np
 import argparse as argp
+import numpy as np
 
 W_TYPE_LINES = [" W "]
 CA_TYPE_LINES = [" Ca ", " ca ", " capillary_number "]

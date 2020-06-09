@@ -31,11 +31,9 @@ def calc_stresslet_data(in_dir):
                 make_coeff_stresslet(x_ele, n_ele, v_ele, f_ele, vesicle.visc_rat),
                 x_ele
             )
-        S /= vesicle.volume * vesicle.Ca
-        Ca_x = vesicle.Ca * np.sin(2 * np.pi * vesicle.W * vesicle.time)
+        S /= vesicle.volume
         tmp_map = {
             "time": vesicle.time,
-            "Ca_x": Ca_x,
             "S_xx": S[0, 0],
             "S_yy": S[1, 1],
             "S_zz": S[2, 2],
@@ -93,7 +91,7 @@ def write_stress_data(data, params):
         out.write("# viscRat = {}\n".format(params["visc_rat"]))
         out.write("# Ca = {}\n".format(params["strain_rate"] / params["EB"]))
         out.write("# W = {}\n".format(params["W"]))
-        fieldnames = ["time", "Ca_x", "S_xx", "S_yy", "S_zz", "S_xy", "S_xz", "S_yz"]
+        fieldnames = ["time", "S_xx", "S_yy", "S_zz", "S_xy", "S_xz", "S_yz"]
         writer = csv.DictWriter(out, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(data)
