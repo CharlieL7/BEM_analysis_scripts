@@ -3,8 +3,8 @@ Plots the deformation parameter wrt. to time (t/epsilon).
 Overlays the experimental and numerical data on one plot
 """
 import csv
-import sys
 import math
+import argparse as argp
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,12 +15,18 @@ VISC_RAT_TYPE_LINES = [" viscRat ", " visc_rat "]
 VOL_RAT_TYPE_LINES = [" volRat ", " vol_rat "]
 
 def main():
-    sim_file = sys.argv[1]
-    exp_file = sys.argv[2]
-    out_name = sys.argv[3]
-    sim_data = read_sim_data(sim_file)
-    exp_data = read_exp_data(exp_file, phase_lag=6.0)
-    plot_deform_ratios(exp_data, sim_data, out_name)
+    parser = argp.ArgumentParser(description="Plots deformation parameter vs. time for experimental and numerical data")
+    parser.add_argument("sim_file", help="simulation data file (csv)")
+    parser.add_argument("exp_file", help="experimental datafile (tsv)")
+    parser.add_argument("out_name", help="output file name (pdf)")
+    parser.add_argument("-p", "--phase_lag", help="phase lag for experimental data")
+    args = parser.parse_args()
+    sim_data = read_sim_data(args.sim_file)
+    if args.phase_lag:
+        exp_data = read_exp_data(args.exp_file, phase_lag=args.phase_lag)
+    else:
+        exp_data = read_exp_data(args.exp_file)
+    plot_deform_ratios(exp_data, sim_data, args.out_name)
 
 def read_sim_data(file_name):
     """
@@ -137,9 +143,9 @@ def plot_deform_ratios(exp_data, sim_data, out_name):
     ax.plot(exp_data[0], exp_data[1], "k.-", label="exp.")
     ax.plot(sim_data[0], sim_data[1], "m-", label="sim.")
     ax.plot(sin_times,
-            np.sin(2. * np.pi * sin_times * De),
+            np.sin(-2. * np.pi * sin_times * De),
             "--",
-            label=r"$\dot{\epsilon} / Ca_0$"
+            label=r"$\dot{\epsilon} / Ca$"
            )
     ax.legend(loc="lower right")
     ax.set_xlabel(r"time $(t \kappa / \mu a^3 )$", fontsize=14)
