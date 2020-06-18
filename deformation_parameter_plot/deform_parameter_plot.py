@@ -27,31 +27,35 @@ def main():
     for csv_file in sorted(glob.glob(in_dir + "*.csv")):
         base = os.path.basename(csv_file)
         name_only = os.path.splitext(base)[0]
-        data_map = read_length_data(csv_file, skipcycles=skipcycles)
-        fig, ax = plot_deform_cax_CC(data_map)
-        add_textbox(ax,
-            r"W = {:.3f}".format(data_map["W"]) +
-            "\n"
-            r"Ca = {:.3f}".format(data_map["Ca"]) +
-            "\n"
-            r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
-            "\n"
-            r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
-        )
-        fig.savefig("{}.pdf".format(name_only + "_D_cax"), format="pdf")
-        plt.close(fig)
-        fig, ax = plot_deform_time_CC(data_map)
-        add_textbox(ax,
-            r"W = {:.3f}".format(data_map["W"]) +
-            "\n"
-            r"Ca = {:.3f}".format(data_map["Ca"]) +
-            "\n"
-            r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
-            "\n"
-            r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
-        )
-        fig.savefig("{}.pdf".format(name_only + "_D_time"), format="pdf")
-        plt.close(fig)
+        try:
+            data_map = read_length_data(csv_file, skipcycles=skipcycles)
+            fig, ax = plot_deform_cax_CC(data_map)
+            add_textbox(ax,
+                        r"W = {:.3f}".format(data_map["W"]) +
+                        "\n"
+                        r"Ca = {:.3f}".format(data_map["Ca"]) +
+                        "\n"
+                        r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
+                        "\n"
+                        r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
+                        )
+            fig.savefig("{}.pdf".format(name_only + "_D_cax"), format="pdf")
+            plt.close(fig)
+            fig, ax = plot_deform_time_CC(data_map)
+            add_textbox(ax,
+                        r"W = {:.3f}".format(data_map["W"]) +
+                        "\n"
+                        r"Ca = {:.3f}".format(data_map["Ca"]) +
+                        "\n"
+                        r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
+                        "\n"
+                        r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
+                        )
+            fig.savefig("{}.pdf".format(name_only + "_D_time"), format="pdf")
+            plt.close(fig)
+        except IOError as err:
+            print("IOError for csv file: {}".format(csv_file))
+            print(err)
 
 
 def read_length_data(in_csv, **kwargs):
@@ -65,10 +69,12 @@ def read_length_data(in_csv, **kwargs):
     Returns:
         data: times, D, and parameters as map
     """
+    D_list = []
+    all_times = []
+    time_list = []
     skipcycles = 0
     if kwargs.get("skipcycles", False):
         skipcycles = kwargs["skipcycles"]
-    data_list = []
     with open(in_csv, newline='') as csv_file:
         is_header = True
         while is_header:
@@ -92,15 +98,17 @@ def read_length_data(in_csv, **kwargs):
         reader = csv.DictReader(csv_file)
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
+            all_times.append(row["time"])
             if row["time"] > (skipcycles/W): # only add value if after certain number of cycles
-                data_list.append(row)
-    time = []
-    D_list = []
-    for row in data_list:
-        time.append(row["time"])
-        D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
+                time_list.append(row["time"])
+                D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
+    period = 1./W
+
+    if all_times[-1] < 10*period:
+        raise IOError("Cycles < 10: {} simulated, parameters: De={} Ca={}".format(all_times[-1] / period, Ca * W, Ca))
+
     data = {
-        "time": np.array(time),
+        "time": np.array(time_list),
         "D": np.array(D_list),
         "W": W,
         "Ca": Ca,
