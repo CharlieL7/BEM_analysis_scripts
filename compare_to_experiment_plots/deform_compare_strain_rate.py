@@ -3,10 +3,11 @@ Plots the deformation parameter wrt. to strain (Ca_x).
 Overlays the experimental and numerical data on one plot
 """
 import csv
-import sys
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import argparse as argp
 
 W_TYPE_LINES = [" W "]
 De_TYPE_LINES = [" De "]
@@ -15,12 +16,27 @@ VISC_RAT_TYPE_LINES = [" viscRat ", " visc_rat "]
 VOL_RAT_TYPE_LINES = [" volRat ", " vol_rat "]
 
 def main():
-    sim_file = sys.argv[1]
-    exp_file = sys.argv[2]
-    out_name = sys.argv[3]
-    sim_data = read_sim_data(sim_file, skipcycles=5)
-    exp_data = read_exp_data(exp_file, phase_lag=6.0)
-    plot_deform_ratios(exp_data, sim_data, out_name)
+    parser = argp.ArgumentParser(description="Plots deformation parameter vs. time for experimental and numerical data")
+    parser.add_argument("sim_file", help="simulation data file (csv)")
+    parser.add_argument("exp_file", help="experimental datafile (tsv)")
+    parser.add_argument("out_name", help="output file name (pdf)")
+    parser.add_argument("-p", "--phase_lag", help="phase lag for experimental data")
+    args = parser.parse_args()
+    sim_data = read_sim_data(args.sim_file, skipcycles=5)
+    if args.phase_lag:
+        exp_data = read_exp_data(args.exp_file, phase_lag=args.phase_lag)
+    else:
+        exp_data = read_exp_data(args.exp_file)
+
+    fig = plt.figure(figsize=(4.5, 4.5))
+    ax = fig.add_subplot(111)
+    plot_deform_ratios(ax, sim_data, line_color="orange")
+    plot_deform_ratios(ax, exp_data, line_color="black")
+    axins = inset_axes(ax, width=1.0, height=0.5)
+    plot_sin_inset(axins)
+    fig.tight_layout(rect=[0, 0, 0.95, 1])
+    fig.savefig("{}.pdf".format(args.out_name), format="pdf")
+    plt.close(fig)
 
 
 def read_sim_data(file_name, **kwargs):
@@ -41,6 +57,7 @@ def read_sim_data(file_name, **kwargs):
         skipcycles = kwargs["skipcycles"]
     Ca_x_list = []
     D_list = []
+    time_list = []
     with open(file_name, newline='') as csv_file:
         is_header = True
         while is_header:
@@ -53,10 +70,6 @@ def read_sim_data(file_name, **kwargs):
                         W = float(tmp_line[eq_pos+1:])
                     elif check_in_list(tmp_line, CA_TYPE_LINES):
                         Ca = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, VISC_RAT_TYPE_LINES):
-                        visc_rat = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, VOL_RAT_TYPE_LINES):
-                        vol_rat = float(tmp_line[eq_pos+1:])
             else:
                 is_header = False
                 # need to move back a line for DictReader to get keys
@@ -67,12 +80,14 @@ def read_sim_data(file_name, **kwargs):
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
             t = row["time"] / Ca
             if t > skipcycles/De:
+                time_list.append(t)
                 Ca_x = -Ca * np.sin(2 * np.pi * De * t)
                 Ca_x_list.append(Ca_x)
                 D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
     Ca_x_arr = np.array(Ca_x_list)
     D_arr = np.array(D_list)
-    return (Ca_x_arr, D_arr)
+    time_arr = np.array(time_list)
+    return {"time":time_arr, "Ca":Ca, "Ca_x":Ca_x_arr, "D":D_arr, "De":De,}
 
 
 def read_exp_data(file_name, **kwargs):
@@ -88,8 +103,10 @@ def read_exp_data(file_name, **kwargs):
         numpy array of the deformation parameter data
     """
     skiprows = 0
-    Ca_x_list = []
+    phase_lag = 0.
     D_list = []
+    Ca_x_list = []
+    time_list = []
     if kwargs.get("skiprows", False):
         skiprows = int(kwargs["skiprows"])
     if "phase_lag" in kwargs:
@@ -110,42 +127,90 @@ def read_exp_data(file_name, **kwargs):
                         De = float(tmp_line[eq_pos+1:])
                     elif check_in_list(tmp_line, CA_TYPE_LINES):
                         Ca = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, VISC_RAT_TYPE_LINES):
-                        visc_rat = float(tmp_line[eq_pos+1:])
-                    elif check_in_list(tmp_line, VOL_RAT_TYPE_LINES):
-                        vol_rat = float(tmp_line[eq_pos+1:])
             else:
                 is_header = False
                 # need to move back a line for DictReader to get keys
                 csv_file.seek(last_pos)
         reader = csv.DictReader(csv_file, delimiter="\t")
-        print(De)
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
             t = (row["time"] - phase_lag) / Ca
+            time_list.append(t)
             Ca_x = -Ca * np.sin(2 * np.pi * De * t)
             Ca_x_list.append(Ca_x)
             D_list.append(row["D"])
     Ca_x_arr = np.array(Ca_x_list)
     D_arr = np.array(D_list)
-    return (Ca_x_arr, D_arr)
+    time_arr = np.array(time_list)
+    return {"time":time_arr, "Ca":Ca, "Ca_x":Ca_x_arr, "D":D_arr, "De":De,}
 
 
-def plot_deform_ratios(exp_data, sim_data, out_name):
+def plot_deform_ratios(ax, data_map, **kwargs):
     """
-    Plots the deformation parameter comparison
+    Plots the deformation parameter vs. Ca_x with color coded sections
+
+    Parameters:
+        ax: axes object to plot on
+        data_map: a map with atleast the keys (time, D, De, Ca)
+        [line_color]: color for the plot lines
+    Returns:
+        None
     """
-    fig = plt.figure(figsize=(4.5, 4.5))
-    ax = fig.add_subplot(111)
-    ax.plot(exp_data[0], exp_data[1], "-")
-    ax.plot(sim_data[0], sim_data[1], "--")
+    line_color = "black"
+    if kwargs.get("line_color", False):
+        line_color = kwargs["line_color"]
+    time_arr = data_map["time"]
+    D_arr = data_map["D"]
+    Ca = data_map["Ca"]
+    De = data_map["De"]
+    p = 1. / De
+    q_p = 1 / (4. * De)
+
+    # breakup data into cycles and four sets
+    Ca_x_lists = [[], [], [], []]
+    D_lists = [[], [], [], []]
+    cycle_num = time_arr[0] // p
+    prev_cycle_num = cycle_num
+    for i in range(time_arr.size):
+        time = time_arr[i]
+        cycle_num = time // p
+        mod_time = time % p
+        Ca_x = -Ca * math.sin(2 * math.pi * De * time)
+        D = D_arr[i]
+
+        if cycle_num != prev_cycle_num:
+            # plot lines and empty data lists
+            ax.plot(Ca_x_lists[0], D_lists[0], "-", color=line_color)
+            ax.plot(Ca_x_lists[1], D_lists[1], ".", color=line_color)
+            ax.plot(Ca_x_lists[2], D_lists[2], ":", color=line_color)
+            ax.plot(Ca_x_lists[3], D_lists[3], "x", color=line_color)
+            Ca_x_lists = [[], [], [], []]
+            D_lists = [[], [], [], []]
+            prev_cycle_num = cycle_num
+
+        if mod_time < q_p:
+            Ca_x_lists[0].append(Ca_x)
+            D_lists[0].append(D)
+        elif mod_time < 2*q_p:
+            Ca_x_lists[1].append(Ca_x)
+            D_lists[1].append(D)
+        elif mod_time < 3*q_p:
+            Ca_x_lists[2].append(Ca_x)
+            D_lists[2].append(D)
+        else:
+            Ca_x_lists[3].append(Ca_x)
+            D_lists[3].append(D)
+
+    # one more time for incomplete cycle
+    ax.plot(Ca_x_lists[0], D_lists[0], "-", color=line_color)
+    ax.plot(Ca_x_lists[1], D_lists[1], ".", color=line_color)
+    ax.plot(Ca_x_lists[2], D_lists[2], ":", color=line_color)
+    ax.plot(Ca_x_lists[3], D_lists[3], "x", color=line_color)
+
     ax.set_xlabel(r"$Ca_{x} (\frac{\mu a^3 \dot{\epsilon}}{\kappa})$", fontsize=14)
     ax.set_ylabel(r"D $\left( \frac{l_x - l_y}{l_x + l_y} \right)$", fontsize=14)
     ax.set_ylim([-1, 1])
     ax.grid(True)
-    fig.tight_layout(rect=[0, 0, 0.95, 1])
-    fig.savefig("{}".format(out_name), format="pdf")
-    plt.close()
 
 
 def check_in_list(in_string, string_list):
@@ -163,6 +228,41 @@ def check_in_list(in_string, string_list):
             return True
     return False
 
+
+def plot_sin_inset(ax):
+    """
+    plots the sinusoidal strain rate legend as an inset
+
+    Parameters:
+        ax: the inset axis to plot on
+    Returns:
+        None
+    """
+    x_vals = []
+    x_vals.append(np.linspace(0, 0.5*np.pi))
+    x_vals.append(np.linspace(0.5*np.pi, 1.0*np.pi))
+    x_vals.append(np.linspace(1.0*np.pi, 1.5*np.pi))
+    x_vals.append(np.linspace(1.5*np.pi, 2.0*np.pi))
+
+    y_vals = []
+    y_vals.append(-np.sin(x_vals[0]))
+    y_vals.append(-np.sin(x_vals[1]))
+    y_vals.append(-np.sin(x_vals[2]))
+    y_vals.append(-np.sin(x_vals[3]))
+
+    ax.plot(x_vals[0], y_vals[0], "k-")
+    ax.plot(x_vals[1], y_vals[1], "k.")
+    ax.plot(x_vals[2], y_vals[2], "k:")
+    ax.plot(x_vals[3], y_vals[3], "kx")
+    ax.tick_params(
+        axis='both',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        bottom=False,      # ticks along the bottom edge are off
+        top=False,         # ticks along the top edge are off
+        left=False,
+        labelbottom=False, # labels along the bottom edge are off
+        labelleft=False
+    )
 
 if __name__ == "__main__":
     main()
