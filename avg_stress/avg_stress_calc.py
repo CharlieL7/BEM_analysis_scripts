@@ -61,7 +61,6 @@ def ext_run(in_dir):
 
     Parameters:
         in_dir: directory of dat files
-        out_name: output file name
     Returns:
         None
     """
@@ -75,7 +74,7 @@ def write_stress_data(data, params):
 
     Parameters:
         data: list of maps with the required keys
-        out_name: output file name
+        params: parameter map with atleast {vol_rat, W, strain_rate, EB, visc_rat}
     Returns:
         None
     """
@@ -136,7 +135,7 @@ def make_coeff_stresslet(x_ele, n_ele, v_ele, f_ele, visc_rat):
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: in_dir, output name")
+        print("Usage: in_dir")
         sys.exit()
     in_dir = sys.argv[1]
     ext_run(in_dir)
