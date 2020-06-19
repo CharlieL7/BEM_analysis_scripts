@@ -9,6 +9,7 @@ import os
 import glob
 import math
 import numpy as np
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import matplotlib.pyplot as plt
 
 W_TYPE_LINES = [" W "]
@@ -29,9 +30,11 @@ def main():
         name_only = os.path.splitext(base)[0]
         try:
             data_map = read_length_data(csv_file, skipcycles=skipcycles)
-            fig, ax = plot_deform_cax_CC(data_map)
+            fig = plt.figure(figsize=(4.5, 4.5))
+            ax = fig.add_subplot(111)
+            plot_deform_cax_CC(ax, data_map)
             add_textbox(ax,
-                        r"W = {:.3f}".format(data_map["W"]) +
+                        r"De = {:.3f}".format(data_map["De"]) +
                         "\n"
                         r"Ca = {:.3f}".format(data_map["Ca"]) +
                         "\n"
@@ -39,11 +42,17 @@ def main():
                         "\n"
                         r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
                         )
+            axins = inset_axes(ax, width=1.0, height=0.5)
+            plot_sin_inset(axins)
+            fig.tight_layout(rect=[0, 0, 0.95, 1])
             fig.savefig("{}.pdf".format(name_only + "_D_cax"), format="pdf")
             plt.close(fig)
-            fig, ax = plot_deform_time_CC(data_map)
+
+            fig = plt.figure(figsize=(4.5, 4.5))
+            ax = fig.add_subplot(111)
+            plot_deform_time(ax, data_map)
             add_textbox(ax,
-                        r"W = {:.3f}".format(data_map["W"]) +
+                        r"De = {:.3f}".format(data_map["De"]) +
                         "\n"
                         r"Ca = {:.3f}".format(data_map["Ca"]) +
                         "\n"
@@ -51,6 +60,7 @@ def main():
                         "\n"
                         r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
                         )
+            fig.tight_layout(rect=[0, 0, 0.95, 1])
             fig.savefig("{}.pdf".format(name_only + "_D_time"), format="pdf")
             plt.close(fig)
         except IOError as err:
@@ -96,21 +106,24 @@ def read_length_data(in_csv, **kwargs):
                 # need to move back a line for DictReader to get keys
                 csv_file.seek(last_pos)
         reader = csv.DictReader(csv_file)
+        De = Ca * W
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
-            all_times.append(row["time"])
-            if row["time"] > (skipcycles/W): # only add value if after certain number of cycles
-                time_list.append(row["time"])
+            t = row["time"] / Ca
+            all_times.append(t)
+            if row["time"] > (skipcycles/De): # only add value if after certain number of cycles
+                time_list.append(t)
                 D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
-    period = 1./W
+    period = 1./De
 
     if all_times[-1] < 10*period:
-        raise IOError("Cycles < 10: {} simulated, parameters: De={} Ca={}".format(all_times[-1] / period, Ca * W, Ca))
+        raise IOError("Cycles < 10: {} simulated, parameters: De={} Ca={}".format(all_times[-1] / period, De, Ca))
 
     data = {
         "time": np.array(time_list),
         "D": np.array(D_list),
         "W": W,
+        "De": De,
         "Ca": Ca,
         "visc_rat": visc_rat,
         "vol_rat": vol_rat,
@@ -118,24 +131,22 @@ def read_length_data(in_csv, **kwargs):
     return data
 
 
-def plot_deform_cax_CC(data_map):
+def plot_deform_cax_CC(ax, data_map):
     """
     Plots the deformation parameter vs. Ca_x with color coded sections
 
     Parameters:
+        ax: axes object to plot on
         data_map: a map with the keys (time, D, W, Ca, visc_rat, vol_rat)
     Returns:
-        fig: the figure created
-        ax: the axes object created
+        None
     """
-    fig = plt.figure(figsize=(4.5, 4.5))
-    ax = fig.add_subplot(111)
     time_arr = data_map["time"]
     D_arr = data_map["D"]
     Ca = data_map["Ca"]
-    W = data_map["W"]
-    p = 1. / W
-    q_p = 1 / (4. * W)
+    De = data_map["De"]
+    p = 1. /De
+    q_p = 1 / (4. * De)
 
     # breakup data into cycles and four sets
     Ca_x_lists = [[], [], [], []]
@@ -146,7 +157,7 @@ def plot_deform_cax_CC(data_map):
         time = time_arr[i]
         cycle_num = time // p
         mod_time = time % p
-        Ca_x = -Ca * math.sin(2 * math.pi * W * time)
+        Ca_x = -Ca * math.sin(2 * math.pi * De * time)
         D = D_arr[i]
 
         if cycle_num != prev_cycle_num:
@@ -176,69 +187,35 @@ def plot_deform_cax_CC(data_map):
     ax.set_ylabel(r"D $\left( \frac{l_x - l_y}{l_x + l_y} \right)$", fontsize=14)
     ax.set_ylim([-1, 1])
     ax.grid(True)
-    fig.tight_layout(rect=[0, 0, 0.95, 1])
-    return fig, ax
 
 
-def plot_deform_time_CC(data_map):
+def plot_deform_time(ax, data_map):
     """
-    Plots the deformation parameter vs. time with color coded sections
+    Plots the deformation parameter vs. time and the strain rate curve
 
     Parameters:
-        data_map: a map with the keys (time, D, W, Ca, visc_rat, vol_rat)
+        ax: axes object to plot on
+        data_map: a map with atleast the keys (time, D, De)
     Returns:
-        fig: the figure created
-        ax: the axes object created
+        None
     """
-    fig = plt.figure(figsize=(4.5, 4.5))
-    ax = fig.add_subplot(111)
     time_arr = data_map["time"]
     D_arr = data_map["D"]
-    Ca = data_map["Ca"]
-    W = data_map["W"]
-    p = 1. / W
-    q_p = 1 / (4. * W)
-
-    # breakup data into cycles and four sets
-    time_lists = [[], [], [], []]
-    D_lists = [[], [], [], []]
-    cycle_num = time_arr[0] // p
-    prev_cycle_num = cycle_num
-    for i in range(time_arr.size):
-        time = time_arr[i]
-        cycle_num = time // p
-        mod_time = time % p
-        D = D_arr[i]
-
-        if cycle_num != prev_cycle_num:
-            # plot lines and empty data lists
-            ax.plot(time_lists[0], D_lists[0], "k-")
-            ax.plot(time_lists[1], D_lists[1], "b--")
-            ax.plot(time_lists[2], D_lists[2], "g-.")
-            ax.plot(time_lists[3], D_lists[3], "r:")
-            time_lists = [[], [], [], []]
-            D_lists = [[], [], [], []]
-            prev_cycle_num = cycle_num
-
-        if mod_time < q_p:
-            time_lists[0].append(time)
-            D_lists[0].append(D)
-        elif mod_time < 2*q_p:
-            time_lists[1].append(time)
-            D_lists[1].append(D)
-        elif mod_time < 3*q_p:
-            time_lists[2].append(time)
-            D_lists[2].append(D)
-        else:
-            time_lists[3].append(time)
-            D_lists[3].append(D)
-
-    ax.set_xlabel(r"$time (\frac{t \kappa}{\mu{out} a^3})$", fontsize=14)
+    De = data_map["De"]
+    min_time = np.amin(time_arr)
+    max_time = np.amax(time_arr)
+    sin_times = np.linspace(min_time, max_time, num=500)
+    ax.plot(sin_times,
+            np.sin(-2. * np.pi * sin_times * De),
+            "k-",
+            label=r"$\dot{\epsilon} / Ca$"
+           )
+    ax.plot(time_arr, D_arr, "--", color="orange", label="sim.")
+    ax.legend(loc="upper left")
+    ax.set_xlabel(r"$time (\frac{t \kappa}{\mu a^3})$", fontsize=14)
     ax.set_ylabel(r"D $\left( \frac{l_x - l_y}{l_x + l_y} \right)$", fontsize=14)
-    ax.set_ylim([-1, 1])
+    #ax.set_ylim([-1, 1])
     ax.grid(True)
-    fig.tight_layout(rect=[0, 0, 0.95, 1])
-    return fig, ax
 
 
 def add_textbox(ax, textstr):
@@ -269,6 +246,43 @@ def check_in_list(in_string, string_list):
         if in_string.find(tmp) != -1:
             return True
     return False
+
+
+def plot_sin_inset(ax):
+    """
+    plots the sinusoidal strain rate legend as an inset
+
+    Parameters:
+        ax: the inset axis to plot on
+    Returns:
+        None
+    """
+    x_vals = []
+    x_vals.append(np.linspace(0, 0.5*np.pi))
+    x_vals.append(np.linspace(0.5*np.pi, 1.0*np.pi))
+    x_vals.append(np.linspace(1.0*np.pi, 1.5*np.pi))
+    x_vals.append(np.linspace(1.5*np.pi, 2.0*np.pi))
+
+    y_vals = []
+    y_vals.append(-np.sin(x_vals[0]))
+    y_vals.append(-np.sin(x_vals[1]))
+    y_vals.append(-np.sin(x_vals[2]))
+    y_vals.append(-np.sin(x_vals[3]))
+
+    ax.plot(x_vals[0], y_vals[0], "k-")
+    ax.plot(x_vals[1], y_vals[1], "b--")
+    ax.plot(x_vals[2], y_vals[2], "g-.")
+    ax.plot(x_vals[3], y_vals[3], "r:")
+    ax.tick_params(
+        axis='both',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        bottom=False,      # ticks along the bottom edge are off
+        top=False,         # ticks along the top edge are off
+        left=False,
+        labelbottom=False, # labels along the bottom edge are off
+        labelleft=False
+    )
+    ax.set_ylabel(r"$\frac{\dot{\epsilon}}{Ca}$", rotation=0)
 
 
 if __name__ == "__main__":
