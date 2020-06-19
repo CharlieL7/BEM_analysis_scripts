@@ -12,7 +12,7 @@ def main():
 
     childFolders = glob.glob(parentFolder + "*/")
     processes = [
-        Process(target=ASC.ext_run, args=(childFolders[i], {"skip_mod":10},))
+        Process(target=ASC.ext_run, args=(childFolders[i],), kwargs={"skip_mod":10})
         for i in range(len(childFolders))
     ]
 
