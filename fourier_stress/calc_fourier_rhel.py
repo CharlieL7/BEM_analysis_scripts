@@ -94,8 +94,9 @@ def read_stress_data(in_csv):
         S_1.append(row["S_xx"] - row["S_yy"])
         S_2.append(row["S_yy"] - row["S_zz"])
 
-    S_1 = np.array(S_1)
-    S_2 = np.array(S_2)
+    # convert non-dim
+    S_1 = np.array(S_1) * Ca
+    S_2 = np.array(S_2) * Ca
     data = {
         "time": np.array(time),
         "S_1": np.array(S_1),

@@ -21,8 +21,12 @@ def main():
     parser.add_argument("exp_file", help="experimental datafile (tsv)")
     parser.add_argument("out_name", help="output file name (pdf)")
     parser.add_argument("-p", "--phase_lag", help="phase lag for experimental data")
+    parser.add_argument("-s", "--skip_cycles", help="skip number of cycles for simulation data")
     args = parser.parse_args()
-    sim_data = read_sim_data(args.sim_file, skipcycles=5)
+    if args.skip_cycles:
+        sim_data = read_sim_data(args.sim_file, skipcycles=int(args.skip_cycles))
+    else:
+        sim_data = read_sim_data(args.sim_file, skipcycles=0)
     if args.phase_lag:
         exp_data = read_exp_data(args.exp_file, phase_lag=args.phase_lag)
     else:
@@ -263,6 +267,7 @@ def plot_sin_inset(ax):
         labelbottom=False, # labels along the bottom edge are off
         labelleft=False
     )
+    ax.set_ylabel(r"$\frac{\dot{\epsilon}}{Ca}$", rotation=0)
 
 if __name__ == "__main__":
     main()

@@ -31,7 +31,7 @@ def main():
         ax1.plot(Ca_x, N1, "k-", label=r"$N_1$")
         ax1.plot(Ca_x, N2, "b-", label=r"$N_2$")
         ax1.set_xlabel(r"$Ca_x$", fontsize=12)
-        ax1.set_ylabel(r"stress response", fontsize=12)
+        ax1.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)", fontsize=12)
         ax1.grid(True)
         add_textbox(ax1,
             r"De = {:.3f}".format(data_map["De"]) +
@@ -43,6 +43,7 @@ def main():
             r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
         )
         ax1.legend(loc="upper left")
+        ax1.set_ylim([-25, 25])
 
         fig1.tight_layout(rect=[0, 0, 0.95, 1])
         fig1.savefig("{}_Cax_plot.pdf".format(name_only), format="pdf")
@@ -90,13 +91,14 @@ def read_stress_data(in_csv):
     De = Ca * W
     for row in stress_data:
         t = row["time"] / Ca
-        if 3/De < t <= 5/De:
+        if 6/De < t <= 8/De:
             time.append(t)
             S_1.append(row["S_xx"] - row["S_yy"])
             S_2.append(row["S_yy"] - row["S_zz"])
-
-    S_1 = np.array(S_1)
-    S_2 = np.array(S_2)
+    
+    # convert to other non-dim
+    S_1 = np.array(S_1) * Ca
+    S_2 = np.array(S_2) * Ca
     data = {
         "time": np.array(time),
         "S_1": np.array(S_1),
