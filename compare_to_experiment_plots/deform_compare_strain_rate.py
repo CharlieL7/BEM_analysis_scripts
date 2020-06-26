@@ -175,6 +175,17 @@ def plot_deform_ratios(ax, data_map, **kwargs):
     D_lists = [[], [], [], []]
     cycle_num = time_arr[0] // p
     prev_cycle_num = cycle_num
+    def plot_clear_data(Ca_x, D):
+        ax.plot(Ca_x[0], D[0], "-", color=line_color)
+        ax.plot(Ca_x[1], D[1], ".", color=line_color)
+        ax.plot(Ca_x[2], D[2], ":", color=line_color)
+        ax.plot(Ca_x[3], D[3], "x", color=line_color)
+        for l in Ca_x:
+            l.clear() # must be done this way to alter mutable
+        for m in D:
+            m.clear()
+        nonlocal prev_cycle_num
+        prev_cycle_num = cycle_num
     for i in range(time_arr.size):
         time = time_arr[i]
         cycle_num = time // p
@@ -183,14 +194,7 @@ def plot_deform_ratios(ax, data_map, **kwargs):
         D = D_arr[i]
 
         if cycle_num != prev_cycle_num:
-            # plot lines and empty data lists
-            ax.plot(Ca_x_lists[0], D_lists[0], "-", color=line_color)
-            ax.plot(Ca_x_lists[1], D_lists[1], ".", color=line_color)
-            ax.plot(Ca_x_lists[2], D_lists[2], ":", color=line_color)
-            ax.plot(Ca_x_lists[3], D_lists[3], "x", color=line_color)
-            Ca_x_lists = [[], [], [], []]
-            D_lists = [[], [], [], []]
-            prev_cycle_num = cycle_num
+            plot_clear_data(Ca_x_lists, D_lists)
 
         if mod_time < q_p:
             Ca_x_lists[0].append(Ca_x)
@@ -204,12 +208,8 @@ def plot_deform_ratios(ax, data_map, **kwargs):
         else:
             Ca_x_lists[3].append(Ca_x)
             D_lists[3].append(D)
+    plot_clear_data(Ca_x_lists, D_lists)# once more to plot last of data
 
-    # one more time for incomplete cycle
-    ax.plot(Ca_x_lists[0], D_lists[0], "-", color=line_color)
-    ax.plot(Ca_x_lists[1], D_lists[1], ".", color=line_color)
-    ax.plot(Ca_x_lists[2], D_lists[2], ":", color=line_color)
-    ax.plot(Ca_x_lists[3], D_lists[3], "x", color=line_color)
 
     ax.set_xlabel(r"$Ca_{x} (\frac{\mu a^3 \dot{\epsilon}}{\kappa})$", fontsize=14)
     ax.set_ylabel(r"D $\left( \frac{l_x - l_y}{l_x + l_y} \right)$", fontsize=14)
