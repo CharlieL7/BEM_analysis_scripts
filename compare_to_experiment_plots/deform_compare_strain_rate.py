@@ -34,7 +34,7 @@ def main():
 
     fig = plt.figure(figsize=(4.5, 4.5))
     ax = fig.add_subplot(111)
-    plot_deform_ratios(ax, sim_data, line_color="orange")
+    plot_deform_ratios(ax, sim_data, line_color="darkmagenta")
     plot_deform_ratios(ax, exp_data, line_color="black")
     axins = inset_axes(ax, width=1.0, height=0.5)
     plot_sin_inset(axins)
@@ -254,10 +254,11 @@ def plot_sin_inset(ax):
     y_vals.append(-np.sin(x_vals[2]))
     y_vals.append(-np.sin(x_vals[3]))
 
-    ax.plot(x_vals[0], y_vals[0], "k-")
-    ax.plot(x_vals[1], y_vals[1], "k.")
-    ax.plot(x_vals[2], y_vals[2], "k:")
-    ax.plot(x_vals[3], y_vals[3], "kx")
+    colr = "cornflowerblue"
+    ax.plot(x_vals[0], y_vals[0], "-", color=colr)
+    ax.plot(x_vals[1], y_vals[1], ".", color=colr)
+    ax.plot(x_vals[2], y_vals[2], ":", color=colr)
+    ax.plot(x_vals[3], y_vals[3], "x", color=colr)
     ax.tick_params(
         axis='both',          # changes apply to the x-axis
         which='both',      # both major and minor ticks are affected

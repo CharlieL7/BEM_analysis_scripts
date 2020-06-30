@@ -157,8 +157,8 @@ def plot_deform_cax_CC(ax, data_map):
     def plot_clear_data(Ca_x, D):
         ax.plot(Ca_x[0], D[0], "k-")
         ax.plot(Ca_x[1], D[1], "b--")
-        ax.plot(Ca_x[2], D[2], "g-.")
-        ax.plot(Ca_x[3], D[3], "r:")
+        ax.plot(Ca_x[2], D[2], "g:")
+        ax.plot(Ca_x[3], D[3], "r-.")
         for l in Ca_x:
             l.clear() # must be done this way to alter mutable
         for m in D:
@@ -278,8 +278,8 @@ def plot_sin_inset(ax):
 
     ax.plot(x_vals[0], y_vals[0], "k-")
     ax.plot(x_vals[1], y_vals[1], "b--")
-    ax.plot(x_vals[2], y_vals[2], "g-.")
-    ax.plot(x_vals[3], y_vals[3], "r:")
+    ax.plot(x_vals[2], y_vals[2], "g:")
+    ax.plot(x_vals[3], y_vals[3], "r-.")
     ax.tick_params(
         axis='both',          # changes apply to the x-axis
         which='both',      # both major and minor ticks are affected
