@@ -4,12 +4,13 @@ Parallelized with Process by making each direcoty a separate process
 """
 from multiprocessing import Process
 import sys
+import os
 import glob
 import extract_length_data as ELD
 
 def main():
     parentFolder = sys.argv[1]
-
+    parentFolder = os.path.join(parentFolder, '')
     childFolders = glob.glob(parentFolder + "*/")
     processes = [
         Process(target=ELD.ext_run, args=(childFolders[i],))

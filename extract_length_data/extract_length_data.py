@@ -8,11 +8,13 @@ import sys
 import glob
 import math
 import csv
+import os
 import numpy as np
 import tec_dat as td
 
 def main():
     in_dir = sys.argv[1]
+    in_dir = os.path.join(in_dir, '')
     data, params = read_length_data(in_dir)
     write_length_data(data, params)
 
