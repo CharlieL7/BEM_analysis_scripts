@@ -166,6 +166,8 @@ def plot_deform_cax_CC(ax, data_map):
         nonlocal prev_cycle_num
         prev_cycle_num = cycle_num
 
+    Ca_x_0 = -Ca * math.sin(2 * math.pi * De * time_arr[0])
+    ax.plot(Ca_x_0, D_arr[0], "ko", mfc="None") # plot start point
     for i in range(time_arr.size):
         time = time_arr[i]
         cycle_num = time // p
