@@ -43,20 +43,23 @@ def read_length_data(in_dir, mod):
             for vert_data in all_data:
                 pos_data = [float(x) for x in vert_data[0:3]]
                 positions.append(pos_data)
-            time = params["time"]
-            Ca = params["strain_rate"] / params["EB"]
-            Ca_x = Ca * math.sin(2 * math.pi * params["W"] * params["time"])
-            x_len, y_len = td.calc_xy_lengths(np.array(positions))
-            major_len, minor_len = td.calc_major_minor_lengths(np.array(positions))
-            tmp_map = {
-                "time": time,
-                "Ca_x": Ca_x,
-                "x_len": x_len,
-                "y_len": y_len,
-                "major_len": major_len,
-                "minor_len": minor_len
-                }
-            length_data.append(tmp_map)
+            if np.isnan(postitions).any():
+                print("Detected nan value for file: {}".format(dat_file))
+            else:
+                time = params["time"]
+                Ca = params["strain_rate"] / params["EB"]
+                Ca_x = Ca * math.sin(2 * math.pi * params["W"] * params["time"])
+                x_len, y_len = td.calc_xy_lengths(np.array(positions))
+                major_len, minor_len = td.calc_major_minor_lengths(np.array(positions))
+                tmp_map = {
+                    "time": time,
+                    "Ca_x": Ca_x,
+                    "x_len": x_len,
+                    "y_len": y_len,
+                    "major_len": major_len,
+                    "minor_len": minor_len
+                    }
+                length_data.append(tmp_map)
     return (length_data, params)
 
 
@@ -70,7 +73,7 @@ def write_length_data(data, params):
     Returns:
         None
     """
-    out_name = "oblate_length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
+    out_name = "length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
         params["vol_rat"],
         params["W"],
         params["Ca"],
