@@ -116,8 +116,10 @@ def read_length_data(in_csv, **kwargs):
                 D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
     period = 1./De
 
+    """
     if all_times[-1] < 10*period:
         raise IOError("Cycles < 10: {} simulated, parameters: De={} Ca={}".format(all_times[-1] / period, De, Ca))
+    """
 
     data = {
         "time": np.array(time_list),

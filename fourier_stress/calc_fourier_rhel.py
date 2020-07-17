@@ -8,6 +8,7 @@ import os
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
 from scipy.interpolate import interp1d
 
 W_TYPE_LINES = [" W "]
@@ -28,16 +29,22 @@ def main():
             data_map["vol_rat"], data_map["De"], data_map["Ca"])
         freq_S1, amp_S1 = calc_fourier(data_map["time"], data_map["S_1"])
         freq_S2, amp_S2 = calc_fourier(data_map["time"], data_map["S_2"])
+        loc = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
         fig = plt.figure(figsize=(4.5, 4.5))
-        ax = fig.add_subplot(111)
-        ax.plot(freq_S1 / data_map["De"], np.abs(amp_S1), ".-", label=r"$N_1$", color="black")
-        ax.plot(freq_S2 / data_map["De"], np.abs(amp_S2), ".-", label=r"$N_2$", color="tab:blue")
-        ax.legend(loc="upper right")
-        ax.set_xlim((0, 15))
-        plt.xticks(np.arange(0, 15+1, 1.0))
-        ax.set_xlabel(r"Frequency / De")
-        ax.set_ylabel(r"Amplitude")
-        add_textbox(ax,
+        ax_top = fig.add_subplot(211)
+        ax_bot = fig.add_subplot(212)
+        ax_top.plot(freq_S1 / data_map["De"], np.abs(amp_S1), ".-", label=r"$N_1$", color="black")
+        ax_bot.plot(freq_S2 / data_map["De"], np.abs(amp_S2), ".-", label=r"$N_2$", color="purple")
+        ax_top.legend(loc="upper right")
+        ax_bot.legend(loc="upper right")
+        ax_top.set_xlim((0, 8))
+        ax_bot.set_xlim((0, 8))
+        ax_top.xaxis.set_major_locator(loc)
+        ax_bot.xaxis.set_major_locator(loc)
+        ax_bot.set_xlabel(r"Frequency / De")
+        ax_top.set_ylabel(r"Amplitude")
+        ax_bot.set_ylabel(r"Amplitude")
+        add_textbox(ax_bot,
                     r"De = {:.3f}".format(data_map["De"]) +
                     "\n"
                     r"Ca = {:.3f}".format(data_map["Ca"]) +
@@ -147,7 +154,7 @@ def add_textbox(ax, textstr):
         None
     """
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.70, 0.80, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+    ax.text(0.70, 0.70, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
 
 def rescale_arr(arr):

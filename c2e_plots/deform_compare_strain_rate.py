@@ -36,7 +36,7 @@ def main():
     ax = fig.add_subplot(111)
     plot_deform_ratios(ax, sim_data, line_color="darkmagenta")
     plot_deform_ratios(ax, exp_data, line_color="black")
-    axins = inset_axes(ax, width=1.0, height=0.5)
+    axins = inset_axes(ax, width=1.25, height=0.75)
     plot_sin_inset(axins)
     fig.tight_layout(rect=[0, 0, 0.95, 1])
     fig.savefig("{}.pdf".format(args.out_name), format="pdf")
@@ -243,10 +243,10 @@ def plot_sin_inset(ax):
         None
     """
     x_vals = []
-    x_vals.append(np.linspace(0, 0.5*np.pi))
-    x_vals.append(np.linspace(0.5*np.pi, 1.0*np.pi))
-    x_vals.append(np.linspace(1.0*np.pi, 1.5*np.pi))
-    x_vals.append(np.linspace(1.5*np.pi, 2.0*np.pi))
+    x_vals.append(np.linspace(0, 0.5*np.pi, 10))
+    x_vals.append(np.linspace(0.5*np.pi, 1.0*np.pi, 10))
+    x_vals.append(np.linspace(1.0*np.pi, 1.5*np.pi, 10))
+    x_vals.append(np.linspace(1.5*np.pi, 2.0*np.pi, 10))
 
     y_vals = []
     y_vals.append(-np.sin(x_vals[0]))
@@ -268,7 +268,7 @@ def plot_sin_inset(ax):
         labelbottom=False, # labels along the bottom edge are off
         labelleft=False
     )
-    ax.set_ylabel(r"$\frac{\dot{\epsilon}}{Ca}$", rotation=0)
+    ax.set_ylabel(r"$\frac{\dot{\epsilon}}{Ca}$", fontsize=20)
 
 if __name__ == "__main__":
     main()
