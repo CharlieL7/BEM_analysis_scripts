@@ -59,7 +59,7 @@ def determine_regime(file_name, **kwargs):
     """
     Determines which LAOE dynamical regime the simulation is in.
     Handles the header variables and skips a number of initial cycles, default 6
-    If not atleast 10 cycles returns -1
+    If not atleast 7 cycles returns -1
 
     Parameters:
         file_name: string of csv file name
@@ -102,8 +102,8 @@ def determine_regime(file_name, **kwargs):
     D_arr = np.array(D_list)
     period = 1./W
     
-    if time_list[-1] < 10*period:
-        raise IOError("Cycles < 10: {} simulated, parameters: De={} Ca={}".format(time_list[-1] / period, Ca * W, Ca))
+    if time_list[-1] < 7*period:
+        raise IOError("Cycles < 7: {} simulated, parameters: De={} Ca={}".format(time_list[-1] / period, Ca * W, Ca))
 
     try:
         max_val = D_arr.max()

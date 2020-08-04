@@ -1,6 +1,6 @@
 """
 Caculates the FFT of the stresslet data
-and then plots the results
+and then plots the results with real and imaginary components separate
 """
 import sys
 import csv
@@ -30,11 +30,13 @@ def main():
         freq_S1, amp_S1 = calc_fourier(data_map["time"], data_map["S_1"])
         freq_S2, amp_S2 = calc_fourier(data_map["time"], data_map["S_2"])
         loc = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
+
+        # real version
         fig = plt.figure(figsize=(4.5, 4.5))
         ax_top = fig.add_subplot(211)
         ax_bot = fig.add_subplot(212)
-        ax_top.plot(freq_S1 / data_map["De"], np.abs(amp_S1), ".-", label=r"$N_1$", color="black")
-        ax_bot.plot(freq_S2 / data_map["De"], np.abs(amp_S2), ".-", label=r"$N_2$", color="purple")
+        ax_top.plot(freq_S1 / data_map["De"], np.abs(np.real(amp_S1)), ".-", label=r"$N_1$", color="black")
+        ax_bot.plot(freq_S2 / data_map["De"], np.abs(np.real(amp_S2)), ".-", label=r"$N_2$", color="purple")
         ax_top.legend(loc="upper right")
         ax_bot.legend(loc="upper right")
         ax_top.set_xlim((0, 8))
@@ -54,7 +56,35 @@ def main():
                     r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
                    )
         fig.tight_layout(rect=[0, 0, 0.95, 1])
-        fig.savefig("{}.pdf".format(out_name), format="pdf")
+        fig.savefig("{}_real.pdf".format(out_name), format="pdf")
+        plt.close(fig)
+        
+        # imaginary version
+        fig = plt.figure(figsize=(4.5, 4.5))
+        ax_top = fig.add_subplot(211)
+        ax_bot = fig.add_subplot(212)
+        ax_top.plot(freq_S1 / data_map["De"], np.abs(np.imag(amp_S1)), ".-", label=r"$N_1$", color="black")
+        ax_bot.plot(freq_S2 / data_map["De"], np.abs(np.imag(amp_S2)), ".-", label=r"$N_2$", color="purple")
+        ax_top.legend(loc="upper right")
+        ax_bot.legend(loc="upper right")
+        ax_top.set_xlim((0, 8))
+        ax_bot.set_xlim((0, 8))
+        ax_top.xaxis.set_major_locator(loc)
+        ax_bot.xaxis.set_major_locator(loc)
+        ax_bot.set_xlabel(r"Frequency / De")
+        ax_top.set_ylabel(r"Amplitude")
+        ax_bot.set_ylabel(r"Amplitude")
+        add_textbox(ax_bot,
+                    r"De = {:.3f}".format(data_map["De"]) +
+                    "\n"
+                    r"Ca = {:.3f}".format(data_map["Ca"]) +
+                    "\n"
+                    r"$\nu$ = {:.3f}".format(data_map["vol_rat"]) +
+                    "\n"
+                    r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
+                   )
+        fig.tight_layout(rect=[0, 0, 0.95, 1])
+        fig.savefig("{}_imag.pdf".format(out_name), format="pdf")
         plt.close(fig)
 
 

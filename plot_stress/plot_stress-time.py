@@ -43,7 +43,7 @@ def main():
             r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
         )
         ax1.legend(loc="upper left")
-        ax1.set_ylim([-25, 25])
+        #ax1.set_ylim([-10, 10])
 
         fig1.tight_layout(rect=[0, 0, 0.95, 1])
         fig1.savefig("{}_time_plot.pdf".format(name_only), format="pdf")
@@ -96,9 +96,8 @@ def read_stress_data(in_csv):
             S_1.append(row["S_xx"] - row["S_yy"])
             S_2.append(row["S_yy"] - row["S_zz"])
 
-    # convert to alternative non-dimensionalization
-    S_1 = np.array(S_1) * Ca
-    S_2 = np.array(S_2) * Ca
+    S_1 = np.array(S_1)
+    S_2 = np.array(S_2)
     data = {
         "time": np.array(time),
         "S_1": np.array(S_1),

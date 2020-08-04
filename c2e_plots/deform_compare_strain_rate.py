@@ -36,7 +36,7 @@ def main():
     ax = fig.add_subplot(111)
     plot_deform_ratios(ax, sim_data, line_color="darkmagenta")
     plot_deform_ratios(ax, exp_data, line_color="black")
-    axins = inset_axes(ax, width=1.25, height=0.75)
+    axins = inset_axes(ax, width=1.00, height=0.50)
     plot_sin_inset(axins)
     fig.tight_layout(rect=[0, 0, 0.95, 1])
     fig.savefig("{}.pdf".format(args.out_name), format="pdf")
@@ -135,7 +135,7 @@ def read_exp_data(file_name, **kwargs):
                 is_header = False
                 # need to move back a line for DictReader to get keys
                 csv_file.seek(last_pos)
-        reader = csv.DictReader(csv_file, delimiter="\t")
+        reader = csv.DictReader(csv_file, delimiter=",")
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
             t = (row["time"] - phase_lag) / Ca

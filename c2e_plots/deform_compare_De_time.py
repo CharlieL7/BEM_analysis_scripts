@@ -15,20 +15,34 @@ VISC_RAT_TYPE_LINES = [" viscRat ", " visc_rat "]
 VOL_RAT_TYPE_LINES = [" volRat ", " vol_rat "]
 
 def main():
-    parser = argp.ArgumentParser(description="Plots deformation parameter vs. time for experimental and numerical data")
+    parser = argp.ArgumentParser(
+        description="Plots deformation parameter vs. time for experimental and numerical data"
+    )
     parser.add_argument("sim_file", help="simulation data file (csv)")
     parser.add_argument("exp_file", help="experimental datafile (tsv)")
     parser.add_argument("out_name", help="output file name (pdf)")
     parser.add_argument("-p", "--phase_lag", help="phase lag for experimental data")
+    parser.add_argument(
+        "-t", "--sim_trans", help="translating the simulation data by number of periods"
+    )
     args = parser.parse_args()
     sim_data = read_sim_data(args.sim_file)
-    if args.phase_lag:
+    if args.phase_lag and args.sim_trans:
+        sim_data = read_sim_data(args.sim_file, sim_trans=args.sim_trans)
+        exp_data = read_exp_data(args.exp_file, phase_lag=args.phase_lag)
+    elif args.sim_trans:
+        sim_data = read_sim_data(args.sim_file, sim_trans=args.sim_trans)
+        exp_data = read_exp_data(args.exp_file)
+    elif args.phase_lag:
+        sim_data = read_sim_data(args.sim_file)
         exp_data = read_exp_data(args.exp_file, phase_lag=args.phase_lag)
     else:
+        sim_data = read_sim_data(args.sim_file)
         exp_data = read_exp_data(args.exp_file)
     plot_deform_ratios(exp_data, sim_data, args.out_name)
 
-def read_sim_data(file_name):
+
+def read_sim_data(file_name, **kwargs):
     """
     Reads the simulation data from file
     Note that the simulation data file has a different structure from
@@ -36,6 +50,7 @@ def read_sim_data(file_name):
 
     Parameters:
         file_name: name of the file
+        [sim_trans]: translating simulation data by periods
     Returns:
         numpy array of the time data
         numpy array of the deformation parameter data
@@ -43,6 +58,9 @@ def read_sim_data(file_name):
     """
     D_list = []
     time_list = []
+    sim_trans = 0
+    if "sim_trans" in kwargs:
+        sim_trans = int(kwargs["sim_trans"])
     with open(file_name, newline='') as csv_file:
         is_header = True
         while is_header:
@@ -70,7 +88,7 @@ def read_sim_data(file_name):
             D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
     time_arr = np.array(time_list)
     De = Ca * W
-    time_arr -= 1 / De # translating by periods
+    time_arr -= sim_trans / De # translating by periods
     D_arr = np.array(D_list)
     return (time_arr, D_arr, De)
 
@@ -120,11 +138,13 @@ def read_exp_data(file_name, **kwargs):
                 is_header = False
                 # need to move back a line for DictReader to get keys
                 csv_file.seek(last_pos)
-        reader = csv.DictReader(csv_file, delimiter="\t")
+        reader = csv.DictReader(csv_file, delimiter=",")
         for row in reader:
             row = dict([a, float(x)] for a, x in row.items()) # convert data to floats
-            time_list.append((row["time"] - phase_lag) / Ca) # convert to other non-dim
-            D_list.append(row["D"])
+            lag_time = (row["time"] - phase_lag) / Ca # subtract pag and convert non-dim
+            if lag_time > 0.:
+                time_list.append(lag_time)
+                D_list.append(row["D"])
     time_arr = np.array(time_list)
     D_arr = np.array(D_list)
     return (time_arr, D_arr, De)
@@ -136,12 +156,21 @@ def plot_deform_ratios(exp_data, sim_data, out_name):
     """
     fig = plt.figure(figsize=(4.5, 4.5))
     ax = fig.add_subplot(111)
-    min_time = np.amin(sim_data[0])
-    max_time = np.amax(sim_data[0])
+    min_time = np.amin(exp_data[0])
+    max_time = np.amax(exp_data[0])
     sin_times = np.linspace(min_time, max_time, num=500)
     De = sim_data[2]
+
+    # make sim and exp data to same time
+    trunc_sim_times = []
+    trunc_sim_D = []
+    for i, time in enumerate(sim_data[0]):
+        if min_time <= time <= max_time:
+            trunc_sim_times.append(time)
+            trunc_sim_D.append(sim_data[1][i])
+
     ax.plot(exp_data[0], exp_data[1], "k.-", label="exp.")
-    ax.plot(sim_data[0], sim_data[1], "m-", label="sim.")
+    ax.plot(trunc_sim_times, trunc_sim_D, "m-", label="sim.")
     ax.plot(sin_times,
             np.sin(-2. * np.pi * sin_times * De),
             "--",
@@ -151,7 +180,6 @@ def plot_deform_ratios(exp_data, sim_data, out_name):
     ax.set_xlabel(r"time $(t \kappa / \mu a^3 )$", fontsize=14)
     ax.set_ylabel(r"D $\left( \frac{l_x - l_y}{l_x + l_y} \right)$", fontsize=14)
     ax.set_ylim([-1, 1])
-    ax.set_xlim([0, 0.8])
     ax.grid(True)
     fig.tight_layout(rect=[0, 0, 0.95, 1])
     fig.savefig("{}".format(out_name), format="pdf")

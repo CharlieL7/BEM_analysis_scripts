@@ -69,7 +69,7 @@ def read_sim_data(file_name):
             time_list.append(row["time"])
             D_list.append((row["x_len"] - row["y_len"]) / (row["x_len"] + row["y_len"]))
     time_arr = np.array(time_list)
-    time_arr -= 1 / W # translating by a period
+    time_arr -= 5 / W # translating by 5 periods
     D_arr = np.array(D_list)
     return (time_arr, D_arr, W)
 

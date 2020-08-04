@@ -39,7 +39,7 @@ def main():
             "\n"
             r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
         )
-        #ax.set_ylim([-35, 35])
+        ax.set_ylim([-15, 15])
         ax.legend(loc="upper left")
         axins = inset_axes(ax, width=1.0, height=0.5)
         plot_sin_inset(axins)
@@ -94,9 +94,8 @@ def read_stress_data(in_csv):
             S_1.append(row["S_xx"] - row["S_yy"])
             S_2.append(row["S_yy"] - row["S_zz"])
 
-    # convert to other non-dim
-    S_1 = np.array(S_1) * Ca
-    S_2 = np.array(S_2) * Ca
+    S_1 = np.array(S_1)
+    S_2 = np.array(S_2)
     data = {
         "time": np.array(time),
         "S_1": np.array(S_1),
