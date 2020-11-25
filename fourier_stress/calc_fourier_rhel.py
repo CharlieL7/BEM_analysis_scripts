@@ -41,9 +41,9 @@ def main():
         ax_bot.set_xlim((0, 8))
         ax_top.xaxis.set_major_locator(loc)
         ax_bot.xaxis.set_major_locator(loc)
-        ax_bot.set_xlabel(r"Frequency / De")
-        ax_top.set_ylabel(r"Amplitude")
-        ax_bot.set_ylabel(r"Amplitude")
+        ax_bot.set_xlabel(r"Frequency / De", fontsize=16)
+        ax_top.set_ylabel(r"Amplitude", fontsize=16)
+        ax_bot.set_ylabel(r"Amplitude", fontsize=16)
         add_textbox(ax_bot,
                     r"De = {:.3f}".format(data_map["De"]) +
                     "\n"

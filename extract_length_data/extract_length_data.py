@@ -43,7 +43,7 @@ def read_length_data(in_dir, mod):
             for vert_data in all_data:
                 pos_data = [float(x) for x in vert_data[0:3]]
                 positions.append(pos_data)
-            if np.isnan(postitions).any():
+            if np.isnan(positions).any():
                 print("Detected nan value for file: {}".format(dat_file))
             else:
                 time = params["time"]

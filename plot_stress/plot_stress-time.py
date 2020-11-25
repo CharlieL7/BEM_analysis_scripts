@@ -30,8 +30,8 @@ def main():
         ax1.plot(time, N1, "k-", label=r"$N_1$")
         ax1.plot(time, N2, "b-", label=r"$N_2$")
         ax1.plot(time, -np.sin(2. * np.pi * time * De), "m--", label=r"$\dot{\epsilon}$")
-        ax1.set_xlabel(r"time ($t \kappa / \mu a^3$)", fontsize=12)
-        ax1.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)", fontsize=12)
+        ax1.set_xlabel(r"time ($t \kappa / \mu a^3$)", fontsize=16)
+        ax1.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)", fontsize=16)
         ax1.grid(True)
         add_textbox(ax1,
             r"De = {:.3f}".format(data_map["De"]) +

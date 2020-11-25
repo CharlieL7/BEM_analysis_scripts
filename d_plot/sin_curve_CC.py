@@ -25,6 +25,9 @@ ax.plot(x_vals[2], y_vals[2], "g-.")
 ax.plot(x_vals[3], y_vals[3], "r:")
 
 ax.grid(True)
+ax.set_xlabel(r"$t$")
+ax.set_ylabel(r"$Ca_x$")
+
 fig.tight_layout(rect=[0, 0, 0.95, 1])
 fig.savefig("{}.pdf".format("sin_legend"), format="pdf")
 plt.close(fig)
