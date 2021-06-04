@@ -47,7 +47,7 @@ def rot_mesh(ax, d, dat_file):
         rot_mat = np.array([
             [1, 0, 0],
             [0, c, -s],
-            [0, -s, c]
+            [0, s, c]
         ])
     elif ax == Axis.Y:
         rot_mat = np.array([
