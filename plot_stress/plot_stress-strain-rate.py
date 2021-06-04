@@ -24,11 +24,11 @@ def main():
         base = os.path.basename(csv_file)
         name_only = os.path.splitext(base)[0]
         data_map = read_stress_data(csv_file)
-        fig = plt.figure(figsize=(4.5, 4.5))
+        fig = plt.figure(figsize=(3.5, 3.5))
         ax = fig.add_subplot()
         plot_stress_cax(ax, data_map)
-        ax.set_xlabel(r"$Ca_x$", fontsize=12)
-        ax.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)", fontsize=12)
+        ax.set_xlabel(r"$Ca_x$")
+        ax.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)")
         ax.grid(True)
         add_textbox(ax,
             r"De = {:.3f}".format(data_map["De"]) +
@@ -217,7 +217,7 @@ def add_textbox(ax, textstr):
         None
     """
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.70, 0.20, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+    ax.text(0.63, 0.23, textstr, transform=ax.transAxes, verticalalignment='top', bbox=props)
 
 
 def plot_sin_inset(ax):
