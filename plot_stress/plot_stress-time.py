@@ -24,14 +24,14 @@ def main():
         De = data_map["De"]
         N1 = data_map["S_1"]
         N2 = data_map["S_2"]
-        fig1 = plt.figure(figsize=(4.5, 4.5))
+        fig1 = plt.figure(figsize=(3.5, 3.5))
 
         ax1 = fig1.add_subplot()
         ax1.plot(time, N1, "k-", label=r"$N_1$")
         ax1.plot(time, N2, "b-", label=r"$N_2$")
         ax1.plot(time, -np.sin(2. * np.pi * time * De), "m--", label=r"$\dot{\epsilon}$")
-        ax1.set_xlabel(r"time ($t \kappa / \mu a^3$)", fontsize=12)
-        ax1.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)", fontsize=12)
+        ax1.set_xlabel(r"time ($t \kappa / \mu a^3$)")
+        ax1.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)")
         ax1.grid(True)
         add_textbox(ax1,
             r"De = {:.3f}".format(data_map["De"]) +
@@ -43,7 +43,7 @@ def main():
             r"$\lambda$ = {:.3f}".format(data_map["visc_rat"])
         )
         ax1.legend(loc="upper left")
-        #ax1.set_ylim([-10, 10])
+        ax1.set_ylim([-10, 10])
 
         fig1.tight_layout(rect=[0, 0, 0.95, 1])
         fig1.savefig("{}_time_plot.pdf".format(name_only), format="pdf")
@@ -138,7 +138,7 @@ def add_textbox(ax, textstr):
         None
     """
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-    ax.text(0.70, 0.20, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+    ax.text(0.63, 0.23, textstr, transform=ax.transAxes, verticalalignment='top', bbox=props)
 
 
 if __name__ == "__main__":

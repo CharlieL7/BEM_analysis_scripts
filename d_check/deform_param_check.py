@@ -102,8 +102,8 @@ def determine_regime(file_name, **kwargs):
     D_arr = np.array(D_list)
     period = 1./W
     
-    if time_list[-1] < 7*period:
-        raise IOError("Cycles < 7: {} simulated, parameters: De={} Ca={}".format(time_list[-1] / period, Ca * W, Ca))
+    if time_list[-1] < 6*period:
+        raise IOError("Cycles < 6: {} simulated, parameters: De={} Ca={}".format(time_list[-1] / period, Ca * W, Ca))
 
     try:
         max_val = D_arr.max()

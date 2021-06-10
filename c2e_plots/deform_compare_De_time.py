@@ -182,7 +182,7 @@ def plot_deform_ratios(exp_data, sim_data, out_name):
     ax.set_ylim([-1, 1])
     ax.grid(True)
     fig.tight_layout(rect=[0, 0, 0.95, 1])
-    fig.savefig("{}".format(out_name), format="pdf")
+    fig.savefig("{}.pdf".format(out_name), format="pdf")
     plt.close()
 
 
