@@ -15,10 +15,11 @@ import tec_dat as td
 def main():
     parser = argp.ArgumentParser(description="extracts length data from simulation data")
     parser.add_argument("in_dir", help="folder of mesh data files")
+    parser.add_argument("out_dir", help="folder to output into")
     parser.add_argument("mod", help="modulus for skipping files")
     args = parser.parse_args()
     data, params = read_length_data(args.in_dir, int(args.mod))
-    write_length_data(data, params)
+    write_length_data(args.in_dir, args.out_dir, data, params)
 
 
 def read_length_data(in_dir, mod):
@@ -63,7 +64,7 @@ def read_length_data(in_dir, mod):
     return (length_data, params)
 
 
-def write_length_data(data, params):
+def write_length_data(in_dir, out_dir, data, params):
     """
     writes a list of maps out
 
@@ -73,11 +74,16 @@ def write_length_data(data, params):
     Returns:
         None
     """
-    out_name = "length_data_vol_{0:.3f}_W{1:.3f}_Ca{2:.3f}_visc{3:.3f}.csv".format(
-        params["vol_rat"],
-        params["W"],
-        params["Ca"],
-        params["visc_rat"]
+    #out_name = "{0}/length_data_vol_{1:.3f}_W{2:.3f}_Ca{3:.3f}_visc{4:.3f}.csv".format(
+    #    out_dir,
+    #    params["vol_rat"],
+    #    params["W"],
+    #    params["Ca"],
+    #    params["visc_rat"]
+    #)
+    out_name = "{0}/{1}.csv".format(
+        out_dir,
+        os.path.basename(os.path.dirname(in_dir)),
     )
 
     with open(out_name, "w", newline='') as csvfile:
@@ -92,7 +98,7 @@ def write_length_data(data, params):
         writer.writerows(data)
 
 
-def ext_run(in_dir, mod):
+def ext_run(in_dir, out_dir, mod):
     """
     For running through an external python program
 
@@ -103,7 +109,7 @@ def ext_run(in_dir, mod):
         None
     """
     data, params = read_length_data(in_dir, mod)
-    write_length_data(data, params)
+    write_length_data(in_dir, out_dir, data, params)
 
 
 if __name__ == "__main__":

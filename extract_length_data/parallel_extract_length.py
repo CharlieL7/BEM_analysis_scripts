@@ -11,13 +11,14 @@ import extract_length_data as ELD
 def main():
     parser = argp.ArgumentParser(description="Runs several extral_length_data jobs in parallel")
     parser.add_argument("in_dir", help="folder of tecdat files")
+    parser.add_argument("out_dir", help="output folder")
     parser.add_argument("mod", help="modulus for skipping files")
     args = parser.parse_args()
     parentFolder = args.in_dir
     parentFolder = os.path.join(parentFolder, '')
     childFolders = glob.glob(parentFolder + "*/")
     processes = [
-        Process(target=ELD.ext_run, args=(childFolders[i], int(args.mod),))
+        Process(target=ELD.ext_run, args=(childFolders[i], args.out_dir, int(args.mod),))
         for i in range(len(childFolders))
     ]
 
