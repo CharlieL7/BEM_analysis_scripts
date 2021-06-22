@@ -28,7 +28,7 @@ def main():
         ax = fig.add_subplot()
         plot_stress_cax(ax, data_map)
         ax.set_xlabel(r"$Ca_x$")
-        ax.set_ylabel(r"normal stress difference ($\frac{\sigma_{ij}^P a^3}{V_p \kappa}$)")
+        ax.set_ylabel(r"normal stress difference ($\frac{\tilde{S_{ij}}^P}{\dot{\epsilon} \mu_{\mathit{out}} V_p}$)")
         ax.grid(True)
         add_textbox(ax,
             r"De = {:.3f}".format(data_map["De"]) +
